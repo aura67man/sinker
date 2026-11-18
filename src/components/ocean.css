@@ -1,0 +1,38 @@
+.ocean {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  transition: background-color 1.4s ease-out;
+}
+
+/* Faint god-rays near the surface. */
+.ocean-light {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 24px, transparent 24px 96px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent 60%);
+  transition: opacity 1.4s ease-out;
+}
+
+.flake {
+  position: absolute;
+  bottom: -8px;
+  background: rgba(220, 235, 245, 0.35);
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(10px, -55vh);
+  }
+  to {
+    transform: translate(-6px, -110vh);
+  }
+}
