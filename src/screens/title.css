@@ -1,0 +1,164 @@
+.title-screen {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* Dusk sky over the surface. */
+.sky {
+  position: relative;
+  height: 42vh;
+  min-height: 240px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #241a3d 0%, #5b2f58 45%, #c4573f 80%, #f2a14a 100%);
+}
+
+.sun {
+  position: absolute;
+  left: 68%;
+  bottom: -40px;
+  width: 120px;
+  height: 120px;
+  background: #ffd166;
+  box-shadow: 0 0 60px rgba(255, 209, 102, 0.6);
+  /* Chunky pixel circle. */
+  clip-path: polygon(30% 0, 70% 0, 70% 10%, 85% 10%, 85% 20%, 92% 20%, 92% 30%, 100% 30%, 100% 70%, 92% 70%, 92% 80%,
+      85% 80%, 85% 90%, 70% 90%, 70% 100%, 30% 100%, 30% 90%, 15% 90%, 15% 80%, 8% 80%, 8% 70%, 0 70%, 0 30%, 8% 30%,
+      8% 20%, 15% 20%, 15% 10%, 30% 10%);
+}
+
+.cloud {
+  position: absolute;
+  height: 16px;
+  background: rgba(255, 210, 190, 0.35);
+  box-shadow: 16px -10px 0 rgba(255, 210, 190, 0.35), 40px -10px 0 rgba(255, 210, 190, 0.35);
+  animation: cloud-drift 60s linear infinite;
+}
+
+.cloud.c1 {
+  top: 18%;
+  left: 10%;
+  width: 90px;
+}
+
+.cloud.c2 {
+  top: 34%;
+  left: 55%;
+  width: 60px;
+  animation-duration: 80s;
+}
+
+@keyframes cloud-drift {
+  to {
+    transform: translateX(40vw);
+  }
+}
+
+.surface-scene {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 62px;
+  width: 128px;
+  transform: translateX(-80%);
+  animation: barge-bob 3.2s ease-in-out infinite;
+}
+
+.barge {
+  display: block;
+}
+
+/* Cable from the crane tip (the barge sprite's arm ends near x=24px*4) down to Bathy. */
+.cable {
+  position: absolute;
+  left: 98px;
+  top: 28px;
+  width: 4px;
+  height: 36px;
+  background: #120f1f;
+}
+
+/* Hangs off the crane, half in the water. */
+.title-bathy {
+  position: absolute;
+  left: 79px;
+  top: 58px;
+}
+
+@keyframes barge-bob {
+  0%,
+  100% {
+    transform: translate(-80%, 0);
+  }
+  50% {
+    transform: translate(-80%, 3px);
+  }
+}
+
+.waterline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 76px;
+  background: #1f7fa6;
+  border-top: 3px solid #7fd8e8;
+  /* Pixel-stepped wave edge. */
+  clip-path: polygon(0 6px, 8% 6px, 8% 0, 20% 0, 20% 6px, 40% 6px, 40% 0, 55% 0, 55% 6px, 75% 6px, 75% 0, 88% 0, 88% 6px,
+      100% 6px, 100% 100%, 0 100%);
+  /* Translucent, so Bathy shows through below the surface. */
+  opacity: 0.85;
+  z-index: 2;
+}
+
+.title-body {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 28px 16px 40px;
+  text-align: center;
+}
+
+.game-title {
+  margin: 0;
+  font: 700 clamp(3rem, 16vw, 5.5rem) / 1 var(--pixel);
+  letter-spacing: 0.08em;
+  color: var(--amber);
+  text-shadow: 4px 4px 0 #0b3052, 0 0 30px rgba(245, 165, 36, 0.35);
+}
+
+.tagline {
+  margin: 0;
+  font: 400 1rem var(--pixel);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.rules-line {
+  margin: 8px 0 18px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.btn-begin {
+  width: min(420px, 100%);
+  min-height: 64px;
+  border-color: var(--teal);
+  font-size: 1.15rem;
+  box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.35), 0 0 30px rgba(79, 209, 197, 0.25);
+}
+
+.title-meta {
+  margin: 10px 0 0;
+  font: 400 0.75rem var(--pixel);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.title-body .small {
+  max-width: 340px;
+  margin: 6px 0 0;
+}

@@ -1,0 +1,314 @@
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #050a14;
+  --panel: rgba(7, 16, 30, 0.86);
+  --panel-solid: #0a1527;
+  --line: #22385a;
+  --text: #e4ecf4;
+  --muted: #8ea2b9;
+  --teal: #4fd1c5;
+  --amber: #f5a524;
+  --amber-dark: #3a2400;
+  --danger: #ff7a59;
+
+  /* Tier colours. Every tier also has an emoji/label, so colour is never the only cue. */
+  --t-shallows: #a9d6f5;
+  --t-red-herring: #ff7a59;
+  --t-shoal: #4fd1c5;
+  --t-twilight: #82a7ff;
+  --t-abyssal: #c29bff;
+  --t-gem: #ffd166;
+  --t-miss: #6c7d92;
+
+  --pixel: 'Silkscreen', ui-monospace, Menlo, monospace;
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 var(--body);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.eyebrow,
+.section-title {
+  margin: 0;
+  font: 400 0.75rem var(--pixel);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* ── Tier colours ───────────────────────────────────────────────────────── */
+.tier-shallows { color: var(--t-shallows); --tier: var(--t-shallows); }
+.tier-red-herring { color: var(--t-red-herring); --tier: var(--t-red-herring); }
+.tier-shoal { color: var(--t-shoal); --tier: var(--t-shoal); }
+.tier-twilight { color: var(--t-twilight); --tier: var(--t-twilight); }
+.tier-abyssal { color: var(--t-abyssal); --tier: var(--t-abyssal); }
+.tier-gem { color: var(--t-gem); --tier: var(--t-gem); }
+.tier-miss { color: var(--t-miss); --tier: var(--t-miss); }
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.btn {
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 2px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font: 400 0.95rem var(--pixel);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.08s, border-color 0.15s, background 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--teal);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-primary {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.25), 0 0 18px rgba(79, 209, 197, 0.18);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--amber);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  min-height: 32px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.menu-btn {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 10px;
+  z-index: 20;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.modal {
+  width: min(520px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel-solid);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.15), 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.modal::backdrop {
+  background: rgba(2, 5, 10, 0.72);
+}
+
+.modal-body {
+  padding: 18px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-head h2 {
+  margin: 0;
+  font: 700 1.3rem var(--pixel);
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* How to play */
+.howto-steps {
+  margin: 0 0 16px;
+  padding-left: 1.3em;
+}
+
+.howto-steps li + li {
+  margin-top: 8px;
+}
+
+.howto-tiers {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.howto-tiers td {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.howto-tiers td:last-child {
+  text-align: right;
+  color: var(--muted);
+}
+
+/* Settings */
+.setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.setting > span {
+  display: grid;
+}
+
+fieldset.setting {
+  display: grid;
+  justify-content: stretch;
+  gap: 6px;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.setting input[type='checkbox'],
+.radio input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--teal);
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px 18px;
+  border: 2px solid var(--teal);
+  background: var(--panel-solid);
+  font: 400 0.9rem var(--pixel);
+  letter-spacing: 0.12em;
+  animation: toast-in 0.2s ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ── Bathy idle wiggle ──────────────────────────────────────────────────── */
+.bathy {
+  display: inline-block;
+  line-height: 0;
+  animation: bob 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(245, 165, 36, 0.25));
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+/* ── Reduced motion: kill decorative animation, keep the game working ─── */
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}

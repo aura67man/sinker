@@ -7,10 +7,9 @@ and the deeper Bathy, a tiny pixel bathysphere, sinks.
 Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
-> **Status: Phase 1 (foundations).** The game logic, tests, validator and the
-> first 10 prompts are done. Right now the app is a plain "lab" page for
-> checking the daily deal and the answer matching. The actual game UI lands
-> in Phase 2.
+> **Status: Phase 2. The Daily Dive is playable.** Title screen, 7 timed
+> prompts, sink animation, results and share. Art, sound and the full content
+> set land in Phase 3. The Phase 1 test bench lives on at `?lab`.
 
 ## Quick start
 
@@ -37,6 +36,13 @@ npm run build      # production build into dist/
 Score is the plain sum of seven tier values. 1 point = 10 m, so a perfect 700
 reaches the trench floor at 7,000 m. Rarity is preset in the data, not worked
 out from what other players type.
+
+## Saving and fairness
+
+Progress is saved to `localStorage` as you play: each round's result, plus the
+moment the current round started. Reloading mid-round drops you back in with
+the clock still running (it never pauses or resets), and a finished day opens
+straight to its results. Clearing site data wipes your history and streak.
 
 ## Adding prompts
 
@@ -131,7 +137,11 @@ src/
   logic/          pure game logic + tests (scoring, matching, daily deal,
                   streaks, share text, percentile estimate, validation)
   data/           prompt JSON files + lazy loader
-  lab/            Phase 1 test page
+  art/            pixel sprites (editable character grids) + water colours
+  components/     Bathy, timer ring, depth ruler, ocean, modal, toast
+  screens/        Title, Dive (round + reveal), Results, How to Play/Settings
+  state/          save file (localStorage) and small hooks
+  lab/            Phase 1 test page (open with ?lab)
 scripts/
   validate-data.ts
 ```
@@ -139,7 +149,7 @@ scripts/
 ## Roadmap
 
 1. ✅ Foundations: logic, tests, validator, first 10 prompts
-2. Playable Daily Dive: full loop, sink animation, results, share, streaks
+2. ✅ Playable Daily Dive: full loop, sink animation, results, share, streaks
 3. Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
    accessibility, How to Play, stats, buddies, 30+ prompts
 4. Unlimited & Archive
