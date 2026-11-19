@@ -1,5 +1,5 @@
 /** Menu panels shown in modals: How to Play (with a practice dive), Settings, Stats and Buddies. */
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { BUDDIES, type Buddy } from '../art/creatures';
 import type { SpriteDef } from '../art/sprites';
 import { sound } from '../audio/sound';
@@ -141,6 +141,36 @@ interface SettingsProps {
   onChange: (next: Settings) => void;
 }
 
+/** "Test sound" plus a live status line, so a silent phone can say why. */
+function AudioCheck({ enabled }: { enabled: boolean }) {
+  const [status, setStatus] = useState(() => sound.status());
+  useEffect(() => {
+    const id = window.setInterval(() => setStatus(sound.status()), 500);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="setting audio-check">
+      <span>
+        <b>Audio check</b>
+        <span className="muted small" role="status">
+          {status}
+        </span>
+      </span>
+      <button
+        type="button"
+        className="btn"
+        disabled={!enabled}
+        onClick={() => {
+          sound.test();
+          setStatus(sound.status());
+        }}
+      >
+        Test
+      </button>
+    </div>
+  );
+}
+
 export function SettingsPanel({ settings, onChange }: SettingsProps) {
   const set = (patch: Partial<Settings>) => onChange({ ...settings, ...patch });
   return (
@@ -184,6 +214,7 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
           }}
         />
       </label>
+      <AudioCheck enabled={settings.sound} />
       <label className="setting">
         <span>
           <b>Volume</b>

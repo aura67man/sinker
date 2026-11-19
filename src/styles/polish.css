@@ -418,3 +418,13 @@ html[data-palette='glow'] {
   outline: none;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--teal) 30%, transparent);
 }
+
+.audio-check .small {
+  overflow-wrap: anywhere;
+}
+
+.audio-check .btn {
+  flex: none;
+  min-height: 40px;
+  padding: 6px 14px;
+}

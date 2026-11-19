@@ -55,6 +55,8 @@ class SoundEngine {
   unlock(): void {
     if (!this.enabled) return;
     try {
+      // Before the context exists, so iOS creates it in playback mode.
+      this.unmuteIOS();
       if (!this.ctx) {
         const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (!AC) return;
@@ -73,9 +75,8 @@ class SoundEngine {
         this.echo.connect(wet).connect(feedback).connect(this.echo);
         wet.connect(this.master);
       }
-      this.unmuteIOS();
       if (this.ctx.state !== 'running') {
-        void this.ctx.resume();
+        this.wake();
         // iOS only lets a context make sound once something has played inside
         // a tap, so play one silent sample right now.
         const blip = this.ctx.createBufferSource();
@@ -85,9 +86,45 @@ class SoundEngine {
       }
       CLIPS.forEach((c) => void this.load(c));
       this.syncAmbient();
-    } catch {
-      // No audio available: stay silent.
+    } catch (err) {
+      this.note('unlock', err);
     }
+  }
+
+  /** Resume a suspended or iOS-"interrupted" context, noting why if it refuses. */
+  private wake(): void {
+    if (!this.ctx || this.ctx.state === 'running') return;
+    this.ctx.resume().catch((err) => this.note('resume', err));
+  }
+
+  /** The last thing that went wrong, for the status line in Settings. */
+  private lastError = '';
+  private note(where: string, err: unknown): void {
+    this.lastError = `${where}: ${err instanceof Error ? err.message || err.name : String(err)}`;
+  }
+
+  /** One line describing the engine, shown in Settings so a player can tell what's up. */
+  status(): string {
+    if (!this.enabled) return 'Sound is off.';
+    if (!this.ctx) return 'Not started yet. Tap anywhere.';
+    const clips = CLIPS.filter((c) => this.clips.has(c)).length;
+    const music = this.music ? 'playing' : this.drone ? 'fallback drone' : this.ambientWanted ? 'loading' : 'off';
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession?.type;
+    return [
+      `Engine ${this.ctx.state}`,
+      `${clips}/${CLIPS.length} sounds loaded`,
+      `music ${music}`,
+      session ? `session ${session}` : '',
+      this.lastError ? `last error: ${this.lastError}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+
+  /** Plays the gem sound now (for the Test button). Call from a tap. */
+  test(): void {
+    this.unlock();
+    this.chime('gem');
   }
 
   /**
@@ -388,7 +425,11 @@ class SoundEngine {
         this.clips.set(name, buffer);
         return buffer;
       })
-      .catch(() => null);
+      .catch((err) => {
+        this.note(`load ${name}`, err);
+        this.loading.delete(name); // allow a retry on the next tap
+        return null;
+      });
     this.loading.set(name, job);
     return job;
   }
@@ -454,11 +495,15 @@ class SoundEngine {
   }
 
   private play(fn: (ctx: Ctx, out: AudioNode) => void): void {
-    if (!this.enabled || !this.ctx || !this.master || this.ctx.state !== 'running') return;
+    if (!this.enabled || !this.ctx || !this.master) return;
+    // iOS can drop the context to "interrupted" (a call, another app, a media
+    // element). Ask it to come back and schedule anyway: the sound plays as
+    // soon as it does, instead of being silently skipped.
+    this.wake();
     try {
       fn(this.ctx, this.master);
-    } catch {
-      // A failed sound is never worth a crash.
+    } catch (err) {
+      this.note('play', err);
     }
   }
 

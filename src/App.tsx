@@ -110,7 +110,7 @@ export function App() {
     // iOS only counts the end of a tap (touchend / click) as permission to
     // play audio, not the start of it, so listen for those.
     const unlock = () => sound.unlock();
-    const events = ['pointerdown', 'touchend', 'click', 'keydown'] as const;
+    const events = ['touchend', 'click', 'keydown'] as const;
     events.forEach((e) => window.addEventListener(e, unlock, true));
     return () => events.forEach((e) => window.removeEventListener(e, unlock, true));
   }, []);
