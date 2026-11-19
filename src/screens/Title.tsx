@@ -1,5 +1,6 @@
 import { BARGE } from '../art/sprites';
-import { Bathy } from '../components/Bathy';
+import type { SpriteDef } from '../art/sprites';
+import { BathyCrew } from '../components/Bathy';
 import { PixelSprite } from '../components/PixelSprite';
 import { PREVIEW_MS, PROMPTS_PER_DIVE, ROUND_MS } from '../config';
 import './title.css';
@@ -9,9 +10,10 @@ interface Props {
   streak: number;
   resuming: boolean;
   onBegin: () => void;
+  buddy: SpriteDef | null;
 }
 
-export function Title({ diveNumber, streak, resuming, onBegin }: Props) {
+export function Title({ diveNumber, streak, resuming, onBegin, buddy }: Props) {
   return (
     <main className="title-screen">
       <div className="sky" aria-hidden>
@@ -21,7 +23,7 @@ export function Title({ diveNumber, streak, resuming, onBegin }: Props) {
         <div className="surface-scene">
           <PixelSprite sprite={BARGE} scale={4} className="barge" />
           <div className="cable" />
-          <Bathy scale={3} className="title-bathy" />
+          <BathyCrew buddy={buddy} scale={3} className="title-bathy" />
         </div>
         <div className="waterline" />
       </div>

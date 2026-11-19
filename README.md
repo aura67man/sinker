@@ -7,9 +7,22 @@ and the deeper Bathy, a tiny pixel bathysphere, sinks.
 Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
-> **Status: Phase 2. The Daily Dive is playable.** Title screen, 7 timed
-> prompts, sink animation, results and share. Art, sound and the full content
-> set land in Phase 3. The Phase 1 test bench lives on at `?lab`.
+> **Status: Phase 3.** The Daily Dive is fully playable, with pixel art,
+> synthesised sound, stats, dive buddies, colour-blind mode, a How to Play
+> with a practice dive, and 30 prompts (~2,150 answers). Unlimited and
+> Archive modes come next. The test bench and sprite gallery live at `?lab`.
+
+## Features
+
+- **Daily Dive**: 7 prompts a day, the same for everyone, new at midnight Sydney time.
+- **Sound**: everything is synthesised live with the Web Audio API (no audio
+  files). Off by default; toggle with the speaker button or in Settings.
+- **Stats**: games played, average, best, streaks and where your answers landed.
+- **Dive buddies**: unlock companions with a longer best streak
+  (5, 14, 30 and 45 days).
+- **Accessibility**: colour-blind mode (icons + patterned lines + safer
+  palette), reduced motion (follows your device, or force it), skip
+  animations, keyboard-friendly, big tap targets.
 
 ## Quick start
 
@@ -43,6 +56,12 @@ Progress is saved to `localStorage` as you play: each round's result, plus the
 moment the current round started. Reloading mid-round drops you back in with
 the clock still running (it never pauses or resets), and a finished day opens
 straight to its results. Clearing site data wipes your history and streak.
+
+## Editing pixel art
+
+Sprites live in `src/art/` as grids of characters, one per pixel, with a
+palette mapping each character to a colour (`.` is transparent). Change a
+row, save, and check the result in the sprite gallery at `?lab`.
 
 ## Adding prompts
 
@@ -115,8 +134,8 @@ easy to test.
   currently `Australia/Sydney`). `LAUNCH_DATE` is Dive #1.
 - The prompt pool is shuffled with a seeded RNG and dealt seven a day, like a
   deck. No prompt repeats until the deck runs out, then it reshuffles. With
-  `N` prompts you get `floor(N / 7)` fresh days per cycle, so 10 prompts is
-  only 1 day. More content = longer before repeats.
+  `N` prompts you get `floor(N / 7)` fresh days per cycle: 30 prompts gives
+  4 fresh days. More content = longer before repeats.
 - Adding prompts reshuffles every dive, past ones included. Finished dives will
   store their own prompt ids, so your history is unaffected.
 
@@ -137,7 +156,8 @@ src/
   logic/          pure game logic + tests (scoring, matching, daily deal,
                   streaks, share text, percentile estimate, validation)
   data/           prompt JSON files + lazy loader
-  art/            pixel sprites (editable character grids) + water colours
+  art/            pixel sprites (editable character grids), creatures, water colours
+  audio/          Web Audio sound engine (all procedural)
   components/     Bathy, timer ring, depth ruler, ocean, modal, toast
   screens/        Title, Dive (round + reveal), Results, How to Play/Settings
   state/          save file (localStorage) and small hooks
@@ -150,8 +170,8 @@ scripts/
 
 1. ✅ Foundations: logic, tests, validator, first 10 prompts
 2. ✅ Playable Daily Dive: full loop, sink animation, results, share, streaks
-3. Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
-   accessibility, How to Play, stats, buddies, 30+ prompts
+3. ✅ Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
+   accessibility, How to Play, stats, buddies, 30 prompts
 4. Unlimited & Archive
 5. Themed packs
 6. Depth Charge multiplayer (needs a backend; proposal first)

@@ -6,7 +6,10 @@
  * back exactly where you were, clock still running.
  */
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { Bathy } from '../components/Bathy';
+import { sound } from '../audio/sound';
+import type { SpriteDef } from '../art/sprites';
+import { BathyCrew } from '../components/Bathy';
+import { TierIcon } from '../components/TierIcon';
 import { DepthScale } from '../components/DepthScale';
 import { TimerRing } from '../components/TimerRing';
 import { PROMPTS_PER_DIVE } from '../config';
@@ -31,9 +34,23 @@ interface Props {
   onNextRound: () => void;
   onFinish: () => void;
   onDepthChange: (depth: number) => void;
+  /** Sprite of the chosen dive buddy. */
+  buddy: SpriteDef | null;
+  /** Colour-blind mode: icons in the progress pips. */
+  colourblind: boolean;
 }
 
-export function Dive({ active, prompts, animate, onRoundResult, onNextRound, onFinish, onDepthChange }: Props) {
+export function Dive({
+  active,
+  prompts,
+  animate,
+  onRoundResult,
+  onNextRound,
+  onFinish,
+  onDepthChange,
+  buddy,
+  colourblind,
+}: Props) {
   const inRound = active.roundStartedAt !== null && active.rounds.length < PROMPTS_PER_DIVE;
   const total = totalScore(active.rounds);
   const depth = depthForPoints(total);
@@ -50,6 +67,7 @@ export function Dive({ active, prompts, animate, onRoundResult, onNextRound, onF
         depth={depth}
         score={total}
         animate={animate}
+        colourblind={colourblind}
       />
       <DepthScale depth={depth} animate={animate} />
 
@@ -60,6 +78,7 @@ export function Dive({ active, prompts, animate, onRoundResult, onNextRound, onF
           roundNumber={active.rounds.length + 1}
           startedAt={active.roundStartedAt!}
           onResult={onRoundResult}
+          buddy={buddy}
         />
       ) : lastIndex >= 0 ? (
         <RevealView
@@ -70,6 +89,7 @@ export function Dive({ active, prompts, animate, onRoundResult, onNextRound, onF
           isLast={active.rounds.length >= PROMPTS_PER_DIVE}
           animate={animate}
           onNext={active.rounds.length >= PROMPTS_PER_DIVE ? onFinish : onNextRound}
+          buddy={buddy}
         />
       ) : null}
     </div>
@@ -84,12 +104,14 @@ function Hud({
   depth,
   score,
   animate,
+  colourblind,
 }: {
   rounds: RoundResult[];
   current: number;
   depth: number;
   score: number;
   animate: boolean;
+  colourblind: boolean;
 }) {
   const shownScore = useCountUp(score, animate);
   const shownDepth = useCountUp(depth, animate);
@@ -99,11 +121,15 @@ function Hud({
         <span className="hud-label">depth</span>
         <span className="hud-value depth">{fmt(shownDepth)}m</span>
       </div>
-      <div className="pips" aria-label={`Prompt ${Math.min(current + 1, PROMPTS_PER_DIVE)} of ${PROMPTS_PER_DIVE}`}>
+      <div className={`pips ${colourblind ? 'cb' : ''}`} aria-label={`Prompt ${Math.min(current + 1, PROMPTS_PER_DIVE)} of ${PROMPTS_PER_DIVE}`}>
         <div className="pip-row">
           {Array.from({ length: PROMPTS_PER_DIVE }, (_, i) => {
             const r = rounds[i];
-            return <span key={i} className={`pip ${r ? `tier-${r.outcome} done` : ''} ${i === current ? 'current' : ''}`} />;
+            return (
+              <span key={i} className={`pip ${r ? `tier-${r.outcome} done` : ''} ${i === current ? 'current' : ''}`}>
+                {colourblind && r && <TierIcon tier={r.outcome} scale={1} />}
+              </span>
+            );
           })}
         </div>
         <span className="hud-label">
@@ -152,13 +178,14 @@ interface RoundProps {
   roundNumber: number;
   startedAt: number;
   onResult: (result: RoundResult) => void;
+  buddy: SpriteDef | null;
 }
 
 type Feedback = { kind: 'no-echo' | 'suggest'; id: number } | null;
 
 const SHAKE: Keyframe[] = [0, -8, 7, -5, 3, 0].map((x) => ({ transform: `translateX(${x}px)` }));
 
-function RoundView({ prompt, roundNumber, startedAt, onResult }: RoundProps) {
+function RoundView({ prompt, roundNumber, startedAt, onResult, buddy }: RoundProps) {
   const now = useNow();
   const phase = roundPhase(startedAt, now);
   const index = useMemo(() => buildIndex(prompt), [prompt]);
@@ -180,6 +207,17 @@ function RoundView({ prompt, roundNumber, startedAt, onResult }: RoundProps) {
     if (phase === 'over') finish({ promptId: prompt.id, outcome: 'miss' });
   });
 
+  // Sonar ping as the prompt appears (only if we're actually at the start).
+  useEffect(() => {
+    if (roundPhase(startedAt, Date.now()) === 'preview') sound.ping();
+  }, [startedAt]);
+
+  // Heartbeat for each of the last five seconds.
+  const secondsLeft = Math.ceil(answerTimeLeft(startedAt, now) / 1000);
+  useEffect(() => {
+    if (phase === 'active' && secondsLeft <= 5 && secondsLeft > 0) sound.tick();
+  }, [secondsLeft, phase]);
+
   // Unlock and focus the input the moment the preview ends.
   useEffect(() => {
     if (phase === 'active') inputRef.current?.focus();
@@ -194,6 +232,7 @@ function RoundView({ prompt, roundNumber, startedAt, onResult }: RoundProps) {
         return;
       case 'no-echo':
         setPending(null);
+        sound.thud();
         setFeedback({ kind: 'no-echo', id: Date.now() });
         formRef.current?.animate(SHAKE, { duration: 360, easing: 'ease-out' });
         inputRef.current?.select();
@@ -266,7 +305,7 @@ function RoundView({ prompt, roundNumber, startedAt, onResult }: RoundProps) {
         )}
       </div>
 
-      <Bathy className="round-bathy" />
+      <BathyCrew buddy={buddy} className="round-bathy" />
     </section>
   );
 }
@@ -285,9 +324,10 @@ interface RevealProps {
   isLast: boolean;
   animate: boolean;
   onNext: () => void;
+  buddy: SpriteDef | null;
 }
 
-function RevealView({ prompt, result, depthBefore, isLast, animate, onNext }: RevealProps) {
+function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, buddy }: RevealProps) {
   const tier = TIERS[result.outcome];
   const isMiss = result.outcome === 'miss';
   const metres = depthForPoints(tier.points);
@@ -307,6 +347,7 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext }: Re
       setSettled(true);
       return;
     }
+    if (!isMiss) sound.splashAndSink(1.3);
     const target = isMiss ? 0 : (metres / 1000) * column;
     // Accelerate like something heavy, then a small bounce as it settles.
     const anim = chip.animate(
@@ -322,6 +363,10 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext }: Re
     anim.finished.then(() => setSettled(true)).catch(() => undefined);
     return () => anim.cancel();
   }, [animate, isMiss, metres, column]);
+
+  useEffect(() => {
+    if (settled) sound.chime(result.outcome);
+  }, [settled, result.outcome]);
 
   useEffect(() => {
     // preventScroll: keep the sink column in view on short screens.
@@ -340,7 +385,7 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext }: Re
             style={{ top: yFor(depth) + 12 }}
           >
             <span>
-              {TIERS[t].emoji} {TIERS[t].label} · {TIERS[t].points}
+              <TierIcon tier={t} scale={1} /> {TIERS[t].label} · {TIERS[t].points}
             </span>
           </div>
         ))}
@@ -349,12 +394,15 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext }: Re
           className={`chip tier-${result.outcome}`}
           style={settled ? { transform: `translateY(${isMiss ? 0 : yFor(metres)}px)` } : undefined}
         >
-          <Bathy scale={2} />
+          <BathyCrew buddy={buddy} scale={2} />
           <span className="chip-tag">{isMiss ? '— — —' : `“${result.answer}”`}</span>
         </div>
       </div>
 
       <div className={`reveal-text ${settled ? 'show' : ''}`}>
+        <div className="tier-badge">
+          <TierIcon tier={result.outcome} scale={4} labelled />
+        </div>
         <h2 className={`tier-title tier-${result.outcome}`}>{tier.label}</h2>
         {!isMiss && <p className="reveal-answer">“{result.answer}”</p>}
         <p className="reveal-points">

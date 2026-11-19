@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BATHY, BATHY_BLINK } from '../art/sprites';
+import { BATHY, BATHY_BLINK, type SpriteDef } from '../art/sprites';
 import { PixelSprite } from './PixelSprite';
 
 /** The mascot. Blinks every few seconds; the idle wiggle is CSS (.bathy). */
@@ -22,6 +22,28 @@ export function Bathy({ scale = 4, className = '' }: { scale?: number; className
   return (
     <span className={`bathy ${className}`}>
       <PixelSprite sprite={blink ? BATHY_BLINK : BATHY} scale={scale} title="Bathy" />
+    </span>
+  );
+}
+
+/** Bathy with the chosen dive buddy swimming alongside. */
+export function BathyCrew({
+  buddy,
+  scale = 4,
+  className = '',
+}: {
+  buddy: SpriteDef | null;
+  scale?: number;
+  className?: string;
+}) {
+  return (
+    <span className={`crew ${className}`}>
+      <Bathy scale={scale} />
+      {buddy && (
+        <span className="buddy">
+          <PixelSprite sprite={buddy} scale={Math.max(1, Math.round(scale * 0.6))} title="Dive buddy" />
+        </span>
+      )}
     </span>
   );
 }

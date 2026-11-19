@@ -255,6 +255,7 @@ fieldset.setting {
 
 .setting input[type='checkbox'],
 .radio input {
+  flex: none;
   width: 22px;
   height: 22px;
   accent-color: var(--teal);
@@ -311,4 +312,280 @@ html[data-motion='reduced'] *::after {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
+}
+
+/* ── Phase 3 additions ──────────────────────────────────────────────────── */
+
+.tier-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.sound-btn {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top));
+  right: 6px;
+  z-index: 20;
+  font-size: 1rem;
+}
+
+/* Bathy + buddy. The buddy swims a lazy loop beside the hull. */
+.crew {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.buddy {
+  position: absolute;
+  left: 100%;
+  top: 30%;
+  margin-left: 4px;
+  animation: buddy-swim 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(127, 245, 230, 0.35));
+}
+
+@keyframes buddy-swim {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(6px, -6px);
+  }
+  50% {
+    transform: translate(2px, 4px);
+  }
+  75% {
+    transform: translate(-3px, -2px);
+  }
+}
+
+/* ── Colour-blind mode: safer palette (Okabe–Ito based) + patterns ─────── */
+html[data-colourblind='on'] {
+  --t-shallows: #56b4e9;
+  --t-red-herring: #d55e00;
+  --t-shoal: #009e73;
+  --t-twilight: #cc79a7;
+  --t-abyssal: #e69f00;
+  --t-gem: #f0e442;
+}
+
+/* ── Stats ──────────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.stats-grid > div {
+  display: grid;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.stats-grid .stat-num {
+  font: 700 1.3rem var(--pixel);
+}
+
+.stats-grid .stat-label {
+  font: 400 0.55rem var(--pixel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dist {
+  margin: 8px 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.dist li {
+  display: grid;
+  grid-template-columns: 8.5em 1fr 2.5em;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  font-size: 0.85rem;
+}
+
+.dist-bar {
+  height: 12px;
+  background: rgba(142, 162, 185, 0.12);
+}
+
+.dist-bar span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--tier);
+}
+
+.dist-count {
+  text-align: right;
+  color: var(--text);
+  font-family: var(--pixel);
+}
+
+/* ── Buddies ────────────────────────────────────────────────────────────── */
+.buddy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.buddy-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+  min-height: 150px;
+  padding: 14px 8px;
+  border: 2px solid var(--line);
+  background: rgba(3, 8, 16, 0.6);
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+}
+
+.buddy-card.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 16px rgba(79, 209, 197, 0.25);
+}
+
+.buddy-card:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.buddy-name {
+  font: 700 0.85rem var(--pixel);
+  letter-spacing: 0.06em;
+}
+
+/* ── How to play ────────────────────────────────────────────────────────── */
+.howto-panels {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.howto-panel {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: rgba(3, 8, 16, 0.5);
+}
+
+.howto-panel p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.howto-art {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.mini-card,
+.mini-input {
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.mini-input {
+  border-color: var(--teal);
+}
+
+.mini-ring {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--muted);
+  border-radius: 50%;
+  font: 700 0.75rem var(--pixel);
+}
+
+.mini-ring.live {
+  border-color: var(--teal);
+}
+
+.ladder {
+  gap: 1px;
+}
+
+.ladder-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 400 0.6rem var(--pixel);
+}
+
+.practice {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 2px dashed var(--line);
+}
+
+.practice-prompt {
+  margin: 4px 0 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.practice-row {
+  display: flex;
+  gap: 8px;
+}
+
+.practice-row input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 12px;
+  border: 2px solid var(--teal);
+  background: rgba(3, 8, 16, 0.92);
+  color: var(--text);
+  font: 400 1rem var(--body);
+}
+
+.practice-row .btn-dive {
+  height: 48px;
+  border-color: var(--amber);
+  background: var(--amber);
+  color: var(--amber-dark);
+}
+
+.practice-result {
+  min-height: 2.6em;
+  margin-top: 8px;
+}
+
+.practice-result p {
+  margin: 0;
+}
+
+.practice-result .small {
+  display: block;
+}
+
+input[type='range'] {
+  width: 140px;
+  accent-color: var(--teal);
 }

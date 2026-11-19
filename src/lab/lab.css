@@ -199,3 +199,19 @@ summary {
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+
+.gallery figure {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}

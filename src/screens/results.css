@@ -9,6 +9,7 @@
   justify-content: space-between;
   align-items: baseline;
   margin-left: 56px; /* clear the menu button */
+  margin-right: 52px; /* and the sound button */
   font: 400 0.7rem var(--pixel);
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -217,4 +218,102 @@
   .bearing li .muted {
     grid-column: 1 / -1;
   }
+}
+
+/* ── Descent view ───────────────────────────────────────────────────────── */
+.descent-section {
+  margin-top: 28px;
+}
+
+.descent {
+  position: relative;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.descent-tick {
+  position: absolute;
+  right: 6px;
+  font: 400 0.55rem var(--pixel);
+  color: rgba(142, 162, 185, 0.6);
+  transform: translateY(-50%);
+}
+
+.descent-landmark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(142, 162, 185, 0.18);
+}
+
+.descent-landmark span {
+  position: absolute;
+  left: 8px;
+  top: 2px;
+  max-width: 55%;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  color: rgba(142, 162, 185, 0.45);
+}
+
+.descent-landmark.passed {
+  border-top-color: rgba(245, 165, 36, 0.4);
+}
+
+.descent-landmark.passed span {
+  color: var(--amber);
+}
+
+.descent-volcano {
+  position: absolute;
+  right: 10px;
+  line-height: 0;
+  filter: drop-shadow(0 0 10px rgba(255, 106, 43, 0.5));
+}
+
+.descent-path {
+  position: absolute;
+  left: 68%;
+  top: 0;
+  width: 2px;
+  background: linear-gradient(var(--teal), var(--amber));
+}
+
+.descent-stop {
+  position: absolute;
+  left: 68%;
+  line-height: 0;
+  transform: translate(-50%, -50%);
+}
+
+.descent-bathy {
+  position: absolute;
+  left: 68%;
+  transform: translate(-50%, -2px);
+  display: grid;
+  justify-items: center;
+}
+
+.descent-you {
+  margin-top: 4px;
+  font: 700 0.6rem var(--pixel);
+  color: var(--amber);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.descent-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: repeating-linear-gradient(90deg, #0d0b10 0 8px, #15121a 8px 16px);
+  border-top: 2px solid #2a2230;
+  font: 400 0.6rem var(--pixel);
+  letter-spacing: 0.15em;
+  color: var(--muted);
 }
