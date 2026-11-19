@@ -72,7 +72,7 @@ describe('themed packs', () => {
   }));
 
   it('has every pack, in menu order', () => {
-    expect(PACKS.map((p) => p.id)).toEqual(['words', 'movies', 'sports', 'geography', 'music', 'history']);
+    expect(PACKS.map((p) => p.id)).toEqual(['words', 'movies', 'sports', 'geography', 'music', 'history', 'science']);
   });
 
   it.each(packEntries.map((p) => [p.id, p.prompt] as const))('pack prompt %s passes validation', (id, prompt) => {

@@ -1,0 +1,15 @@
+{
+  "id": "science",
+  "title": "Science & Nature",
+  "short": "Science",
+  "blurb": "Organs, rocks, birds, fungi, weather and the weird things of the deep.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Field Notes",
+      "promptIds": ["human-organs", "rocks-and-minerals", "birds", "fungi", "weather", "deep-sea-creatures", "muscles"]
+    },
+    { "title": "Lab Work", "promptIds": [] },
+    { "title": "Expedition", "promptIds": [] }
+  ]
+}
