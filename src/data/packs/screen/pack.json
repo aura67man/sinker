@@ -1,0 +1,15 @@
+{
+  "id": "screen",
+  "title": "Screen & Games",
+  "short": "Screen",
+  "blurb": "Westeros, Gotham, Kanto, the Mushroom Kingdom and the Muppet Theatre.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Press Start",
+      "promptIds": ["game-of-thrones", "looney-tunes", "muppets", "pokemon-gen1", "video-game-consoles", "mario-characters", "batman-villains"]
+    },
+    { "title": "Player Two", "promptIds": [] },
+    { "title": "Boss Level", "promptIds": [] }
+  ]
+}
