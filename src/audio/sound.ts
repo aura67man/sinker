@@ -73,11 +73,44 @@ class SoundEngine {
         this.echo.connect(wet).connect(feedback).connect(this.echo);
         wet.connect(this.master);
       }
-      if (this.ctx.state === 'suspended') void this.ctx.resume();
+      this.unmuteIOS();
+      if (this.ctx.state !== 'running') {
+        void this.ctx.resume();
+        // iOS only lets a context make sound once something has played inside
+        // a tap, so play one silent sample right now.
+        const blip = this.ctx.createBufferSource();
+        blip.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+        blip.connect(this.ctx.destination);
+        blip.start();
+      }
       CLIPS.forEach((c) => void this.load(c));
       this.syncAmbient();
     } catch {
       // No audio available: stay silent.
+    }
+  }
+
+  /**
+   * iPhones mute web audio while the ring/silent switch is on silent (Safari
+   * and Chrome alike: both are WebKit). Playing a real media element once,
+   * from a tap, moves the page into "playback" mode like a video would.
+   * Safari 16.4+ also has navigator.audioSession for the same thing.
+   */
+  private unmuted = false;
+  private unmuteIOS(): void {
+    if (this.unmuted) return;
+    this.unmuted = true;
+    try {
+      const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+      if (session && session.type !== 'playback') session.type = 'playback';
+      const el = new Audio(audioUrl('silence'));
+      el.setAttribute('playsinline', '');
+      el.volume = 0.01;
+      void el.play().catch(() => {
+        this.unmuted = false; // not a real tap yet: try again on the next one
+      });
+    } catch {
+      // Not available: nothing to do.
     }
   }
 

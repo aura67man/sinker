@@ -107,13 +107,12 @@ export function App() {
     sound.setAmbient(settings.ambient);
   }, [settings.sound, settings.volume, settings.ambient]);
   useEffect(() => {
+    // iOS only counts the end of a tap (touchend / click) as permission to
+    // play audio, not the start of it, so listen for those.
     const unlock = () => sound.unlock();
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
-    return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
-    };
+    const events = ['pointerdown', 'touchend', 'click', 'keydown'] as const;
+    events.forEach((e) => window.addEventListener(e, unlock, true));
+    return () => events.forEach((e) => window.removeEventListener(e, unlock, true));
   }, []);
 
   const update = useCallback((fn: (s: SaveData) => SaveData) => setSave((s) => fn(s)), []);
@@ -349,7 +348,12 @@ export function App() {
       </button>
       <button
         className="icon-btn sound-btn"
-        onClick={() => update((s) => ({ ...s, settings: { ...s.settings, sound: !s.settings.sound } }))}
+        onClick={() => {
+          // Switch the engine on inside the tap itself: iOS refuses audio
+          // started a moment later from an effect.
+          sound.setEnabled(!settings.sound);
+          update((s) => ({ ...s, settings: { ...s.settings, sound: !s.settings.sound } }));
+        }}
         aria-label={settings.sound ? 'Mute sound' : 'Turn sound on'}
         aria-pressed={settings.sound}
       >
