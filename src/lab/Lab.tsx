@@ -11,6 +11,10 @@ import { depthForPoints } from '../logic/scoring';
 import { TIERS, TIER_ORDER } from '../logic/tiers';
 import type { Prompt } from '../logic/types';
 import { TIMEZONE } from '../config';
+import { BUDDIES, TIER_SPRITES, VOLCANO } from '../art/creatures';
+import { BATHY } from '../art/sprites';
+import { PixelSprite } from '../components/PixelSprite';
+import type { Outcome } from '../logic/tiers';
 import './lab.css';
 
 function useNow(intervalMs = 1000) {
@@ -94,6 +98,32 @@ export function Lab() {
           {DAILY_POOL_IDS.length} prompts in the pool → {Math.floor(DAILY_POOL_IDS.length / 7)} fresh days per deck
           cycle.
         </p>
+      </section>
+
+      <section className="panel">
+        <h2>Sprite gallery</h2>
+        <div className="gallery">
+          <figure>
+            <PixelSprite sprite={BATHY} scale={4} />
+            <figcaption>Bathy</figcaption>
+          </figure>
+          {(Object.keys(TIER_SPRITES) as Outcome[]).map((t) => (
+            <figure key={t}>
+              <PixelSprite sprite={TIER_SPRITES[t]} scale={4} />
+              <figcaption>{t}</figcaption>
+            </figure>
+          ))}
+          {BUDDIES.map((b) => (
+            <figure key={b.id}>
+              <PixelSprite sprite={b.sprite} scale={4} />
+              <figcaption>{b.name}</figcaption>
+            </figure>
+          ))}
+          <figure>
+            <PixelSprite sprite={VOLCANO} scale={4} />
+            <figcaption>volcano</figcaption>
+          </figure>
+        </div>
       </section>
 
       <section className="panel">

@@ -38,6 +38,14 @@ export interface Settings {
   /** Skip the sink animation entirely. */
   skipAnimations: boolean;
   motion: MotionSetting;
+  /** Sound is off by default: people play this in class. */
+  sound: boolean;
+  /** 0–1. */
+  volume: number;
+  /** Low background drone that darkens with depth. */
+  ambient: boolean;
+  /** Stronger tier cues: patterned lines, icon pips, colour-blind-safe palette. */
+  colourblind: boolean;
 }
 
 export interface SaveData {
@@ -47,12 +55,28 @@ export interface SaveData {
   active: ActiveDive | null;
   settings: Settings;
   seenHowTo: boolean;
+  /** Chosen dive buddy id (see art/creatures.ts). */
+  buddy: string;
 }
 
-export const DEFAULT_SETTINGS: Settings = { skipAnimations: false, motion: 'system' };
+export const DEFAULT_SETTINGS: Settings = {
+  skipAnimations: false,
+  motion: 'system',
+  sound: false,
+  volume: 0.6,
+  ambient: true,
+  colourblind: false,
+};
 
 export function emptySave(): SaveData {
-  return { version: VERSION, daily: {}, active: null, settings: { ...DEFAULT_SETTINGS }, seenHowTo: false };
+  return {
+    version: VERSION,
+    daily: {},
+    active: null,
+    settings: { ...DEFAULT_SETTINGS },
+    seenHowTo: false,
+    buddy: 'lanternfish',
+  };
 }
 
 export function loadSave(): SaveData {

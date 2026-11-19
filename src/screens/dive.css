@@ -476,6 +476,46 @@
 
 /* Shallows (100 m) and Red Herring (150 m) lines sit close together:
    put Red Herring's label under its line so they don't collide. */
-.tier-line.tier-red-herring span {
+.tier-line.tier-red-herring span,
+.tier-line.tier-shoal span {
   top: 3px;
 }
+
+/* ── Phase 3 additions ──────────────────────────────────────────────────── */
+
+.tier-line span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tier-badge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.round-bathy {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Colour-blind mode: bigger pips with tier icons, and patterned tier lines. */
+.pips.cb .pip {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  overflow: hidden;
+}
+
+.pips.cb .pip.done {
+  background: rgba(5, 10, 20, 0.85);
+}
+
+html[data-colourblind='on'] .tier-line.tier-shallows { border-top-style: dotted; }
+html[data-colourblind='on'] .tier-line.tier-red-herring { border-top: 2px dashed; }
+html[data-colourblind='on'] .tier-line.tier-shoal { border-top: 1px solid; }
+html[data-colourblind='on'] .tier-line.tier-twilight { border-top: 4px double; }
+html[data-colourblind='on'] .tier-line.tier-abyssal { border-top: 4px dotted; }
+html[data-colourblind='on'] .tier-line.tier-gem { border-top: 3px solid; }

@@ -36,3 +36,29 @@
     transform: translate(-6px, -110vh);
   }
 }
+
+.ocean-volcano {
+  position: absolute;
+  right: 12%;
+  bottom: 0;
+  line-height: 0;
+  transition: opacity 1.4s ease-out;
+}
+
+.volcano-glow {
+  position: absolute;
+  left: 50%;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(255, 106, 43, 0.35), transparent 65%);
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  to {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(1.15);
+  }
+}
