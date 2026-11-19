@@ -33,6 +33,13 @@ describe('normaliseSave', () => {
     expect(save.settings.sound).toBe(true);
     expect(save.settings.volume).toBe(0.6);
     expect(save.buddy).toBe('hatchetfish');
+    expect(save.settings.palette).toBe('abyss');
+  });
+
+  it('keeps a known palette and resets an unknown one', () => {
+    const base = { version: 1, daily: {}, active: null, seenHowTo: true, buddy: 'lanternfish' };
+    expect(normaliseSave({ ...base, settings: { palette: 'kelp' } }).settings.palette).toBe('kelp');
+    expect(normaliseSave({ ...base, settings: { palette: 'neon-pink' } }).settings.palette).toBe('abyss');
   });
 });
 

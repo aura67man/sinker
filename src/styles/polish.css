@@ -1,0 +1,420 @@
+/*
+ * Polish layer: loaded after every screen's stylesheet, so it can tidy up
+ * shared bits in one place. Softer surfaces, rounder corners, calmer pixel
+ * labels, plus the colour palettes.
+ */
+
+/* ── Palettes ───────────────────────────────────────────────────────────────
+   Each palette only swaps tokens. --teal is the accent (outlines, labels,
+   timer), --amber the highlight (title, score, Dive button). */
+html[data-palette='reef'] {
+  --bg: #06101a;
+  --panel: rgba(8, 20, 34, 0.86);
+  --panel-solid: #0b1a2b;
+  --line: #24425e;
+  --teal: #62d8f2;
+  --amber: #ff8a7a;
+  --amber-dark: #3d0d08;
+  --glass: rgba(10, 22, 38, 0.72);
+  --ocean-tint: rgba(2, 18, 30, 0.4);
+}
+
+html[data-palette='kelp'] {
+  --bg: #06110d;
+  --panel: rgba(8, 24, 18, 0.86);
+  --panel-solid: #0c1d16;
+  --line: #24493a;
+  --teal: #7fd6a0;
+  --amber: #e9c46a;
+  --amber-dark: #2e2204;
+  --muted: #a9bfb3;
+  --glass: rgba(9, 26, 19, 0.74);
+  --ocean-tint: rgba(4, 30, 16, 0.52);
+}
+
+html[data-palette='glow'] {
+  --bg: #07061a;
+  --panel: rgba(14, 12, 38, 0.86);
+  --panel-solid: #110f2c;
+  --line: #2f2b62;
+  --teal: #6ff3ff;
+  --amber: #c792ff;
+  --amber-dark: #1d0838;
+  --muted: #b3b2d6;
+  --glass: rgba(16, 13, 42, 0.74);
+  --ocean-tint: rgba(22, 6, 48, 0.55);
+}
+
+.ocean::after {
+  background: var(--ocean-tint, rgba(3, 8, 16, 0.45));
+}
+
+/* ── Shared surfaces ───────────────────────────────────────────────────── */
+.btn,
+.icon-btn {
+  border-radius: var(--radius);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.btn {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+}
+
+.btn:hover:not(:disabled),
+.icon-btn:hover {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 10%, var(--panel-solid));
+}
+
+.btn-primary {
+  background: color-mix(in srgb, var(--teal) 14%, var(--panel-solid));
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--teal) 18%, transparent);
+}
+
+.modal {
+  border-color: var(--line-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+.modal::backdrop {
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-head h2 {
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+}
+
+.setting,
+.stats-grid > div,
+.howto-panel,
+.practice,
+.archive-row,
+.chapter-row,
+.buddy-card,
+.stats-row > div,
+.dive-log details,
+.descent,
+.mini-card,
+.mini-input {
+  border-radius: var(--radius);
+}
+
+.setting {
+  border-color: var(--line-soft);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.toast {
+  border-width: 1px;
+  border-radius: 999px;
+  padding: 10px 20px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Small pixel labels: smaller tracking reads cleaner. */
+.eyebrow,
+.section-title {
+  letter-spacing: 0.14em;
+}
+
+/* ── Title ─────────────────────────────────────────────────────────────── */
+.tagline {
+  font-size: 0.85rem;
+}
+
+.rules-line {
+  max-width: 30ch;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.btn-begin {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--teal) 16%, var(--panel-solid));
+  box-shadow: 0 10px 36px color-mix(in srgb, var(--teal) 22%, transparent);
+  font-size: 1.05rem;
+}
+
+.title-meta {
+  font-size: 0.7rem;
+}
+
+.title-modes .btn {
+  display: grid;
+  gap: 2px;
+  padding: 10px 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Dive ──────────────────────────────────────────────────────────────── */
+.hud-box {
+  border-color: var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  padding: 5px 10px;
+}
+
+.hud-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+}
+
+.pip {
+  border-radius: 3px;
+}
+
+.prompt-card {
+  border-color: var(--line-soft);
+  border-radius: var(--radius-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 18px 18px 16px;
+}
+
+.prompt-text {
+  margin: 8px 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.qualifiers li {
+  padding: 3px 10px;
+  border-color: color-mix(in srgb, var(--amber) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  font-size: 0.78rem;
+}
+
+/* The flavour line under the prompt: body text, not pixel caps. */
+.hint {
+  font: 400 0.8rem/1.4 var(--body);
+  letter-spacing: 0;
+}
+
+.answer-row {
+  gap: 10px;
+}
+
+.answer-input {
+  border-radius: 12px;
+  border-width: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--teal) 10%, transparent);
+}
+
+.answer-input:disabled {
+  box-shadow: none;
+}
+
+.answer-input::placeholder {
+  color: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+
+.btn-dive {
+  border-radius: 12px;
+  padding: 0 16px;
+  background: var(--amber);
+  color: var(--amber-dark);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.btn-dive:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--amber) 85%, white);
+  border-color: var(--amber);
+}
+
+@media (max-width: 420px) {
+  .timer {
+    width: 48px;
+    height: 48px;
+  }
+
+  .answer-row {
+    gap: 8px;
+  }
+
+  .btn-dive {
+    padding: 0 12px;
+    letter-spacing: 0.06em;
+  }
+}
+
+.chip-tag {
+  border-width: 1px;
+  border-radius: 999px;
+}
+
+.reveal-fact {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* ── Results ───────────────────────────────────────────────────────────── */
+.results-head {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.results-brand {
+  letter-spacing: 0.14em;
+}
+
+.verdict {
+  border-width: 1px;
+  border-radius: var(--radius-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: inset 4px 0 0 var(--tier);
+}
+
+/* ── Packs ─────────────────────────────────────────────────────────────── */
+.pack-list {
+  gap: 6px;
+}
+
+.pack-card {
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pack-card:hover {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 8%, transparent);
+}
+
+.pack-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.pack-card.theme-pitch .pack-icon {
+  background: rgba(63, 174, 90, 0.18);
+}
+
+.pack-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pack-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+}
+
+.pack-blurb {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.pack-progress {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.chapter-row {
+  border-color: var(--line-soft);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.archive-row {
+  border-color: var(--line-soft);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* ── Settings: palette picker ──────────────────────────────────────────── */
+.palette-setting legend {
+  padding: 0 4px;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.palette-option {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.palette-option.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal);
+}
+
+.palette-swatch {
+  display: flex;
+  overflow: hidden;
+  width: 66px;
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+.palette-swatch span {
+  flex: 1;
+}
+
+.palette-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.palette-option .small {
+  line-height: 1.3;
+}
+
+.pack-card.theme-pitch {
+  border-left-color: var(--line-soft);
+}
+
+.pack-title {
+  letter-spacing: 0.03em;
+}
+
+/* One clear focus ring on the answer box instead of outline + glow. */
+.answer-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--teal) 30%, transparent);
+}

@@ -1,0 +1,15 @@
+{
+  "id": "food",
+  "title": "Food & Drink",
+  "short": "Food",
+  "blurb": "Herbs, breads, desserts, sauces, nuts, soups and curries. Come hungry.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Entrée",
+      "promptIds": ["herbs-and-spices", "breads", "desserts", "sauces-and-condiments", "nuts-and-seeds", "soups", "curries"]
+    },
+    { "title": "Main Course", "promptIds": [] },
+    { "title": "Dessert", "promptIds": [] }
+  ]
+}

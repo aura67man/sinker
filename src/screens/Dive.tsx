@@ -301,7 +301,7 @@ function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag, t
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={phase !== 'active'}
-          placeholder={phase === 'preview' ? 'read the prompt…' : 'type one answer…'}
+          placeholder={phase === 'preview' ? 'read the prompt…' : 'your answer…'}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"

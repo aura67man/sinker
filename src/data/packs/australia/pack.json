@@ -1,0 +1,15 @@
+{
+  "id": "australia",
+  "title": "Straya",
+  "short": "Straya",
+  "blurb": "Towns, slang, bands, Bluey, snacks, Big Things and birds. Fair dinkum.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "G'day",
+      "promptIds": ["aussie-towns", "aussie-slang", "aussie-bands", "bluey-characters", "aussie-foods", "aussie-landmarks", "aussie-birds"]
+    },
+    { "title": "Arvo", "promptIds": [] },
+    { "title": "Smoko", "promptIds": [] }
+  ]
+}

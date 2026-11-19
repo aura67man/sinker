@@ -6,6 +6,7 @@
  */
 import type { RoundResult } from '../logic/scoring';
 import { totalScore } from '../logic/scoring';
+import { DEFAULT_PALETTE, isPalette, type PaletteId } from './palettes';
 
 const KEY = 'sinker:save';
 const VERSION = 1;
@@ -60,6 +61,8 @@ export interface Settings {
   ambient: boolean;
   /** Stronger tier cues: patterned lines, icon pips, colour-blind-safe palette. */
   colourblind: boolean;
+  /** Colour scheme for the interface (see state/palettes.ts). */
+  palette: PaletteId;
 }
 
 export interface SaveData {
@@ -86,6 +89,7 @@ export const DEFAULT_SETTINGS: Settings = {
   volume: 0.6,
   ambient: true,
   colourblind: false,
+  palette: DEFAULT_PALETTE,
 };
 
 export function emptySave(): SaveData {
@@ -123,8 +127,14 @@ export function normaliseSave(raw: unknown): SaveData {
     archive: data.archive ?? {},
     packs: data.packs ?? {},
     active: data.active ? (withMode(data.active, 'daily') as ActiveDive) : null,
-    settings: { ...DEFAULT_SETTINGS, ...data.settings },
+    settings: normaliseSettings(data.settings),
   };
+}
+
+function normaliseSettings(raw: Partial<Settings> | undefined): Settings {
+  const settings = { ...DEFAULT_SETTINGS, ...raw };
+  if (!isPalette(settings.palette)) settings.palette = DEFAULT_PALETTE;
+  return settings;
 }
 
 export function loadSave(): SaveData {

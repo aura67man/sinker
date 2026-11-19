@@ -7,11 +7,12 @@ and the deeper Bathy, a tiny pixel bathysphere, sinks.
 Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
-> **Status: Phase 5.** Daily Dive, ∞ Unlimited, ⟲ Archive and ▦ Themed
-> Packs are all playable, with pixel art, synthesised sound, stats, dive
-> buddies, colour-blind mode and a How to Play with a practice dive.
-> Content: 30 daily prompts plus 4 packs × 1 chapter (62 prompts, ~3,400
-> answers). The test bench and sprite gallery live at `?lab`.
+> **Status: Phase 5 + content sprint.** Daily Dive, ∞ Unlimited, ⟲ Archive
+> and ▦ Themed Packs are all playable, with pixel art, ElevenLabs sound and music,
+> stats, dive buddies, colour palettes, colour-blind mode and a How to Play
+> with a practice dive. Content: 66 daily prompts plus 10 packs × 1 chapter
+> (136 prompts, ~11,300 answers). The test bench and sprite gallery live at
+> `?lab`.
 
 ## Features
 
@@ -22,16 +23,21 @@ TypeScript, fully client-side.
   today's daily prompts are always left out so nothing gets spoiled.
 - **⟲ Archive**: replay any past daily dive. If you played it that day, you
   get the exact same prompts.
-- **▦ Themed packs**: Words & Language, At the Movies, Sports and Geography.
-  Each pack is a list of seven-prompt chapters that unlock in order. The
-  Sports pack plays on a football field: 1 point = 1 yard instead of 10 m.
+- **▦ Themed packs**: Words & Language, At the Movies, Sports, Geography,
+  Music, History & Myth, Science & Nature, Screen & Games, Food & Drink and
+  Straya. Each pack is a list of seven-prompt chapters that unlock in order.
+  The Sports pack plays on a football field: 1 point = 1 yard instead of 10 m.
 - One dive at a time: Unlimited, Archive and pack dives can be abandoned from
   the menu; the daily dive can't.
-- **Sound**: everything is synthesised live with the Web Audio API (no audio
-  files). Off by default; toggle with the speaker button or in Settings.
+- **Sound and music**: sound effects and two ambient music loops generated
+  with ElevenLabs. The music crossfades from a calm "shallows" loop to a dark
+  "abyss" loop as Bathy sinks. Off by default; toggle with the speaker button
+  or in Settings.
 - **Stats**: games played, average, best, streaks and where your answers landed.
 - **Dive buddies**: unlock companions with a longer best streak
   (5, 14, 30 and 45 days).
+- **Colour palettes**: Abyss (the original), Coral Reef, Kelp Forest and
+  Bioluminescence, in Settings. Tier colours stay the same in every palette.
 - **Accessibility**: colour-blind mode (icons + patterned lines + safer
   palette), reduced motion (follows your device, or force it), skip
   animations, keyboard-friendly, big tap targets.
@@ -85,6 +91,46 @@ prompts per playable chapter, every id has a file, no prompt used twice, and
 prompt ids unique across the whole project. A new pack folder also needs its
 id added to `PACK_ORDER` in `src/data/index.ts`.
 
+## Colour palettes
+
+Palettes live in `src/state/palettes.ts` (name, blurb, swatch) and
+`src/styles/polish.css` (one `html[data-palette='…']` block each). A palette
+only swaps tokens: `--bg`, `--panel`, `--line`, `--teal` (the accent),
+`--amber` (the highlight), `--amber-dark` (text on the Dive button) and
+`--ocean-tint`. Add an id to `PaletteId`, an entry to `PALETTES` and a CSS
+block, and it shows up in Settings.
+
+## Audio
+
+All clips live in `public/audio/` and were generated with
+[ElevenLabs](https://elevenlabs.io) (Sound Effects v3 and Music v2.5):
+
+| File | Used for |
+|---|---|
+| `ping.mp3` | a new prompt appears |
+| `tick.mp3` | each of the last five seconds |
+| `thud.mp3` | no echo / time out (pitched down for a miss) |
+| `splash.mp3` | an answer lands and Bathy sinks |
+| `chime.mp3` | Shallows, Red Herring and Shoal (pitched lower for rarer tiers) |
+| `chime-rare.mp3` | Twilight and Abyssal |
+| `gem.mp3` | Trench Gem |
+| `fanfare.mp3` | dive complete |
+| `music-shallows.mp3`, `music-abyss.mp3` | 60 s seamless loops, crossfaded by depth |
+
+The effects were trimmed and peak-normalised with ffmpeg; the music loops are a
+60 s cut of each track with the last 3 s crossfaded over the start, so they loop
+without a seam. Clips only download once sound is switched on. If a clip fails
+to load, `src/audio/sound.ts` falls back to a synthesised version of that sound
+(and the music falls back to the old depth drone), so the game never goes silent.
+
+To swap a sound, drop a new mp3 with the same name into `public/audio/`.
+Per-sound levels and tier pitches are the `clip(...)` calls and `TIER_CHIME`
+table in `sound.ts`.
+
+ElevenLabs' free plan is for non-commercial use and asks for attribution,
+which is why the credit sits in Settings and here. If this ever earns money,
+the clips need regenerating (or relicensing) on a paid plan.
+
 ## Editing pixel art
 
 Sprites live in `src/art/` as grids of characters, one per pixel, with a
@@ -110,6 +156,8 @@ match its `id`. Drop a new file in and it joins the daily pool automatically.
 }
 ```
 
+- **`id`**: must match the file name. Names are compared after normalising,
+  so `C`, `C++` and `C#` stay different (`+` → "plus", `#` → "sharp").
 - **`category`**: one of `food`, `animals`, `geography`, `words`, `sport`,
   `screen`, `science`, `music`.
 - **`qualifiers`**: small print shown under the prompt during the 3-second preview.
@@ -162,8 +210,9 @@ easy to test.
   currently `Australia/Sydney`). `LAUNCH_DATE` is Dive #1.
 - The prompt pool is shuffled with a seeded RNG and dealt seven a day, like a
   deck. No prompt repeats until the deck runs out, then it reshuffles. With
-  `N` prompts you get `floor(N / 7)` fresh days per cycle: 30 prompts gives
-  4 fresh days. More content = longer before repeats.
+  `N` prompts you get `floor(N / 7)` fresh days per cycle: 66 prompts gives
+  9 fresh days. More content = longer before repeats. Unlimited deals from
+  the same pool, so every new daily prompt also feeds the Endless Dive.
 - Adding prompts reshuffles every dive, past ones included. Finished dives will
   store their own prompt ids, so your history is unaffected.
 
@@ -183,12 +232,16 @@ src/
   config.ts       timezone, launch date, timings, deck seed
   logic/          pure game logic + tests (scoring, matching, daily deal,
                   streaks, share text, percentile estimate, validation)
-  data/           prompt JSON files + lazy loader
+  data/           prompt JSON files (prompts/ = daily pool, packs/<id>/ =
+                  themed packs) + lazy loader
   art/            pixel sprites (editable character grids), creatures, water colours
-  audio/          Web Audio sound engine (all procedural)
+  audio/          Web Audio sound engine (plays public/audio clips, with a
+                  synthesised fallback for each sound)
   components/     Bathy, timer ring, depth ruler, ocean, modal, toast
   screens/        Title, Dive (round + reveal), Results, How to Play/Settings
-  state/          save file (localStorage) and small hooks
+  state/          save file (localStorage), palettes and small hooks
+  styles/         global.css (tokens, shared bits) + polish.css (palettes,
+                  final layer, loaded last)
   lab/            Phase 1 test page (open with ?lab)
 scripts/
   validate-data.ts
@@ -201,5 +254,6 @@ scripts/
 3. ✅ Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
    accessibility, How to Play, stats, buddies, 30 prompts
 4. ✅ Unlimited & Archive
-5. ✅ Themed packs (Chapter 1 of each; more chapters in content batches)
+5. ✅ Themed packs (Chapter 1 of each; more chapters in content batches),
+   then a content sprint (66 daily prompts, 10 packs) and a polish pass
 6. Depth Charge multiplayer (needs a backend; proposal first)

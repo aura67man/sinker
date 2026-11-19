@@ -1,0 +1,15 @@
+{
+  "id": "music",
+  "title": "Music",
+  "short": "Music",
+  "blurb": "ABBA, Queen, Taylor, MJ, opera and the classics. Turn it up.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Greatest Hits",
+      "promptIds": ["abba-songs", "queen-songs", "music-genres", "classical-composers", "operas", "taylor-swift-songs", "michael-jackson-songs"]
+    },
+    { "title": "B-Sides", "promptIds": [] },
+    { "title": "Encore", "promptIds": [] }
+  ]
+}

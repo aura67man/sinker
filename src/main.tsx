@@ -4,6 +4,8 @@ import '@fontsource/silkscreen/400.css';
 import '@fontsource/silkscreen/700.css';
 import './styles/global.css';
 import { App } from './App';
+// After App, so it lands after every screen's stylesheet.
+import './styles/polish.css';
 
 // ?lab opens the Phase 1 test bench instead of the game. Lazy, so its
 // styles never load in the real game.

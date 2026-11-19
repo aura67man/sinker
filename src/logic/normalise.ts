@@ -24,6 +24,8 @@ export function normalise(input: string): string {
   s = s.replace(/[̀-ͯ]/g, '');
   s = s.replace(/[ßæœøłđðþı]/g, (ch) => SPECIAL_LETTERS[ch] ?? ch);
   s = s.replace(/&/g, ' and ');
+  // So C, C++ and C# stay different answers: "c++" → "c plus plus".
+  s = s.replace(/\+/g, ' plus ').replace(/#/g, ' sharp ');
   // Apostrophes join words ("Rock'n'roll" → "rocknroll"); other punctuation splits them.
   s = s.replace(/['’‘`´]/g, '');
   s = s.replace(/[^a-z0-9]+/g, ' ');

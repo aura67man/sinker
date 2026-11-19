@@ -35,7 +35,9 @@ export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onAr
         <h1 className="game-title">SINKER</h1>
         <p className="tagline">the daily dive</p>
         <p className="rules-line">
-          {PROMPTS_PER_DIVE} prompts · {ROUND_MS / 1000} seconds each · rarer answers sink deeper
+          {PROMPTS_PER_DIVE} prompts · {ROUND_MS / 1000} seconds each.
+          <br />
+          Rarer answers sink deeper.
         </p>
 
         <button className="btn btn-begin" onClick={onBegin}>
@@ -46,13 +48,13 @@ export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onAr
         </p>
         <div className="title-modes">
           <button className="btn" onClick={onUnlimited}>
-            ∞ Unlimited
+            <span aria-hidden="true">∞</span> Unlimited
           </button>
           <button className="btn" onClick={onArchive}>
-            ⟲ Archive
+            <span aria-hidden="true">⟲</span> Archive
           </button>
           <button className="btn" onClick={onPacks}>
-            ▦ Packs
+            <span aria-hidden="true">▦</span> Packs
           </button>
         </div>
         <p className="muted small">

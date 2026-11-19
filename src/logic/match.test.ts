@@ -36,6 +36,12 @@ describe('normalise', () => {
     expect(normalise("Rock'n'roll")).toBe('rocknroll');
     expect(normalise('Mac & cheese')).toBe('mac and cheese');
   });
+
+  it('keeps C, C++ and C# apart', () => {
+    expect(normalise('C++')).toBe('c plus plus');
+    expect(normalise('c#')).toBe('c sharp');
+    expect(normalise('C')).toBe('c');
+  });
 });
 
 describe('damerauLevenshtein', () => {
