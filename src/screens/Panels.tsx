@@ -175,7 +175,14 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
           <b>Sound</b>
           <span className="muted small">Off by default. Sound effects and music made with ElevenLabs.</span>
         </span>
-        <input type="checkbox" checked={settings.sound} onChange={(e) => set({ sound: e.target.checked })} />
+        <input
+          type="checkbox"
+          checked={settings.sound}
+          onChange={(e) => {
+            sound.setEnabled(e.target.checked); // inside the tap, for iOS
+            set({ sound: e.target.checked });
+          }}
+        />
       </label>
       <label className="setting">
         <span>
