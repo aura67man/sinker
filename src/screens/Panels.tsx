@@ -173,7 +173,7 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
       <label className="setting">
         <span>
           <b>Sound</b>
-          <span className="muted small">Off by default. All sounds are synthesised live.</span>
+          <span className="muted small">Off by default. Sound effects and music made with ElevenLabs.</span>
         </span>
         <input type="checkbox" checked={settings.sound} onChange={(e) => set({ sound: e.target.checked })} />
       </label>
@@ -195,8 +195,8 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
       </label>
       <label className="setting">
         <span>
-          <b>Ambient hum</b>
-          <span className="muted small">A low drone that gets darker as you sink.</span>
+          <b>Music</b>
+          <span className="muted small">An ambient loop that drifts darker as you sink.</span>
         </span>
         <input
           type="checkbox"

@@ -8,7 +8,7 @@ Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
 > **Status: Phase 5 + content sprint.** Daily Dive, ∞ Unlimited, ⟲ Archive
-> and ▦ Themed Packs are all playable, with pixel art, synthesised sound,
+> and ▦ Themed Packs are all playable, with pixel art, ElevenLabs sound and music,
 > stats, dive buddies, colour palettes, colour-blind mode and a How to Play
 > with a practice dive. Content: 66 daily prompts plus 10 packs × 1 chapter
 > (136 prompts, ~11,300 answers). The test bench and sprite gallery live at
@@ -29,8 +29,10 @@ TypeScript, fully client-side.
   The Sports pack plays on a football field: 1 point = 1 yard instead of 10 m.
 - One dive at a time: Unlimited, Archive and pack dives can be abandoned from
   the menu; the daily dive can't.
-- **Sound**: everything is synthesised live with the Web Audio API (no audio
-  files). Off by default; toggle with the speaker button or in Settings.
+- **Sound and music**: sound effects and two ambient music loops generated
+  with ElevenLabs. The music crossfades from a calm "shallows" loop to a dark
+  "abyss" loop as Bathy sinks. Off by default; toggle with the speaker button
+  or in Settings.
 - **Stats**: games played, average, best, streaks and where your answers landed.
 - **Dive buddies**: unlock companions with a longer best streak
   (5, 14, 30 and 45 days).
@@ -97,6 +99,37 @@ only swaps tokens: `--bg`, `--panel`, `--line`, `--teal` (the accent),
 `--amber` (the highlight), `--amber-dark` (text on the Dive button) and
 `--ocean-tint`. Add an id to `PaletteId`, an entry to `PALETTES` and a CSS
 block, and it shows up in Settings.
+
+## Audio
+
+All clips live in `public/audio/` and were generated with
+[ElevenLabs](https://elevenlabs.io) (Sound Effects v3 and Music v2.5):
+
+| File | Used for |
+|---|---|
+| `ping.mp3` | a new prompt appears |
+| `tick.mp3` | each of the last five seconds |
+| `thud.mp3` | no echo / time out (pitched down for a miss) |
+| `splash.mp3` | an answer lands and Bathy sinks |
+| `chime.mp3` | Shallows, Red Herring and Shoal (pitched lower for rarer tiers) |
+| `chime-rare.mp3` | Twilight and Abyssal |
+| `gem.mp3` | Trench Gem |
+| `fanfare.mp3` | dive complete |
+| `music-shallows.mp3`, `music-abyss.mp3` | 60 s seamless loops, crossfaded by depth |
+
+The effects were trimmed and peak-normalised with ffmpeg; the music loops are a
+60 s cut of each track with the last 3 s crossfaded over the start, so they loop
+without a seam. Clips only download once sound is switched on. If a clip fails
+to load, `src/audio/sound.ts` falls back to a synthesised version of that sound
+(and the music falls back to the old depth drone), so the game never goes silent.
+
+To swap a sound, drop a new mp3 with the same name into `public/audio/`.
+Per-sound levels and tier pitches are the `clip(...)` calls and `TIER_CHIME`
+table in `sound.ts`.
+
+ElevenLabs' free plan is for non-commercial use and asks for attribution,
+which is why the credit sits in Settings and here. If this ever earns money,
+the clips need regenerating (or relicensing) on a paid plan.
 
 ## Editing pixel art
 
@@ -202,7 +235,8 @@ src/
   data/           prompt JSON files (prompts/ = daily pool, packs/<id>/ =
                   themed packs) + lazy loader
   art/            pixel sprites (editable character grids), creatures, water colours
-  audio/          Web Audio sound engine (all procedural)
+  audio/          Web Audio sound engine (plays public/audio clips, with a
+                  synthesised fallback for each sound)
   components/     Bathy, timer ring, depth ruler, ocean, modal, toast
   screens/        Title, Dive (round + reveal), Results, How to Play/Settings
   state/          save file (localStorage), palettes and small hooks
