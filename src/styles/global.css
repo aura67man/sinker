@@ -589,3 +589,72 @@ input[type='range'] {
   width: 140px;
   accent-color: var(--teal);
 }
+
+/* ── Archive + endless ──────────────────────────────────────────────────── */
+.endless-line {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
+.archive-list {
+  display: grid;
+  gap: 6px;
+  max-height: 60dvh;
+  overflow-y: auto;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archive-row {
+  display: grid;
+  grid-template-columns: 3.5em 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  background: rgba(3, 8, 16, 0.6);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.archive-row:hover {
+  border-color: var(--teal);
+}
+
+.archive-num {
+  font: 700 0.9rem var(--pixel);
+  color: var(--amber);
+}
+
+.archive-date {
+  font-size: 0.9rem;
+}
+
+.archive-status {
+  display: grid;
+  justify-items: end;
+  font: 400 0.6rem var(--pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.mode-tag {
+  margin-left: 8px;
+  color: var(--amber);
+}
+
+.btn-abandon {
+  width: 100%;
+  margin-top: 12px;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.archive-go {
+  color: var(--teal);
+}

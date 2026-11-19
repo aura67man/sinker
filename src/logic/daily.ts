@@ -118,3 +118,22 @@ export function todaysDive(poolIds: readonly string[], now: number = Date.now())
   const diveNumber = diveNumberFor(dateKey);
   return { dateKey, diveNumber, promptIds: dealDive(poolIds, diveNumber) };
 }
+
+/**
+ * Deals an Unlimited ("Endless") dive. Each number gets its own seeded
+ * shuffle, so ∞ #12 is a fixed set of prompts. Today's daily prompts are
+ * left out so Unlimited can never spoil the daily.
+ */
+export function dealUnlimited(
+  poolIds: readonly string[],
+  diveNumber: number,
+  exclude: readonly string[] = [],
+  perDive: number = PROMPTS_PER_DIVE,
+  seed: string = DECK_SEED,
+): string[] {
+  const skip = new Set(exclude);
+  let pool = [...new Set(poolIds)].sort().filter((id) => !skip.has(id));
+  // Tiny pools: fall back to the full pool rather than fail.
+  if (pool.length < perDive) pool = [...new Set(poolIds)].sort();
+  return seededShuffle(pool, rngFromString(`${seed}:unlimited:${diveNumber}`)).slice(0, perDive);
+}

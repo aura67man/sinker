@@ -11,7 +11,7 @@ import { buildShareText } from '../logic/share';
 import type { StreakInfo } from '../logic/streak';
 import { TIERS, TIER_ORDER } from '../logic/tiers';
 import type { Prompt } from '../logic/types';
-import type { FinishedDive } from '../state/save';
+import { diveLabel, type FinishedDive } from '../state/save';
 import { useNow } from '../state/hooks';
 import './results.css';
 
@@ -46,9 +46,13 @@ interface Props {
   streak: StreakInfo;
   onToast: (text: string) => void;
   buddy: SpriteDef | null;
+  onUnlimited: () => void;
+  onArchive: () => void;
 }
 
-export function Results({ dive, prompts, streak, onToast, buddy }: Props) {
+export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, onArchive }: Props) {
+  const label = diveLabel(dive.mode, dive.diveNumber);
+  const isDaily = dive.mode === 'daily';
   const now = useNow(1000);
   const verdict = verdictFor(dive.total);
   const depth = depthForPoints(dive.total);
@@ -62,7 +66,7 @@ export function Results({ dive, prompts, streak, onToast, buddy }: Props) {
   }, [copied]);
 
   async function share() {
-    const text = buildShareText(`#${dive.diveNumber}`, dive.rounds);
+    const text = buildShareText(label, dive.rounds);
     if (await copyText(text)) {
       setCopied(true);
       onToast('copied!');
@@ -75,7 +79,9 @@ export function Results({ dive, prompts, streak, onToast, buddy }: Props) {
     <main className="results">
       <header className="results-head">
         <span className="results-brand">SINKER</span>
-        <span className="muted">dive #{dive.diveNumber} complete</span>
+        <span className="muted">
+          {dive.mode === 'unlimited' ? 'endless dive' : dive.mode === 'archive' ? 'archive dive' : 'dive'} {label} complete
+        </span>
       </header>
 
       <section className="results-hero">
@@ -103,18 +109,36 @@ export function Results({ dive, prompts, streak, onToast, buddy }: Props) {
         </div>
       </section>
 
-      <section className="stats-row">
-        <div>
-          <span className="stat-num">{streak.current}</span>
-          <span className="stat-label">streak</span>
-        </div>
-        <div>
-          <span className="stat-num">{streak.best}</span>
-          <span className="stat-label">best streak</span>
-        </div>
-        <div>
-          <span className="stat-num">{countdown(nextMidnight(now) - now)}</span>
-          <span className="stat-label">next dive</span>
+      {isDaily ? (
+        <section className="stats-row">
+          <div>
+            <span className="stat-num">{streak.current}</span>
+            <span className="stat-label">streak</span>
+          </div>
+          <div>
+            <span className="stat-num">{streak.best}</span>
+            <span className="stat-label">best streak</span>
+          </div>
+          <div>
+            <span className="stat-num">{countdown(nextMidnight(now) - now)}</span>
+            <span className="stat-label">next dive</span>
+          </div>
+        </section>
+      ) : (
+        <p className="muted small mode-note">
+          {dive.mode === 'unlimited' ? 'Endless' : 'Archive'} dives don't count towards your streak or stats.
+        </p>
+      )}
+
+      <section className="more-dives">
+        <h2 className="section-title">keep diving</h2>
+        <div className="more-dives-row">
+          <button className={`btn ${dive.mode === 'unlimited' ? 'btn-primary' : ''}`} onClick={onUnlimited}>
+            ∞ {dive.mode === 'unlimited' ? 'Dive again' : 'Unlimited'}
+          </button>
+          <button className={`btn ${dive.mode === 'archive' ? 'btn-primary' : ''}`} onClick={onArchive}>
+            ⟲ Archive
+          </button>
         </div>
       </section>
 

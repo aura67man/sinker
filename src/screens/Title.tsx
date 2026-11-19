@@ -10,10 +10,12 @@ interface Props {
   streak: number;
   resuming: boolean;
   onBegin: () => void;
+  onUnlimited: () => void;
+  onArchive: () => void;
   buddy: SpriteDef | null;
 }
 
-export function Title({ diveNumber, streak, resuming, onBegin, buddy }: Props) {
+export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onArchive, buddy }: Props) {
   return (
     <main className="title-screen">
       <div className="sky" aria-hidden>
@@ -41,6 +43,14 @@ export function Title({ diveNumber, streak, resuming, onBegin, buddy }: Props) {
         <p className="title-meta">
           dive #{diveNumber} · streak {streak}
         </p>
+        <div className="title-modes">
+          <button className="btn" onClick={onUnlimited}>
+            ∞ Unlimited
+          </button>
+          <button className="btn" onClick={onArchive}>
+            ⟲ Archive
+          </button>
+        </div>
         <p className="muted small">
           Each prompt shows for {PREVIEW_MS / 1000}s before you can type. The clock never pauses.
         </p>

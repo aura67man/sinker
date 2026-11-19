@@ -10,8 +10,16 @@ import { totalScore } from '../logic/scoring';
 const KEY = 'sinker:save';
 const VERSION = 1;
 
-/** A daily dive in progress. Rounds are appended as they finish. */
+/**
+ * daily: today's shared dive (counts for streaks, stats and buddies).
+ * unlimited: the Endless Dive, numbered, play as many as you like.
+ * archive: a replay of a past daily dive.
+ */
+export type DiveMode = 'daily' | 'unlimited' | 'archive';
+
+/** A dive in progress. Rounds are appended as they finish. */
 export interface ActiveDive {
+  mode: DiveMode;
   diveNumber: number;
   dateKey: string;
   promptIds: string[];
@@ -24,6 +32,7 @@ export interface ActiveDive {
 }
 
 export interface FinishedDive {
+  mode: DiveMode;
   diveNumber: number;
   dateKey: string;
   promptIds: string[];
@@ -52,6 +61,10 @@ export interface SaveData {
   version: typeof VERSION;
   /** Finished daily dives, keyed by dive number. */
   daily: Record<number, FinishedDive>;
+  /** Endless dives: the next number to deal, and every finished one. */
+  unlimited: { next: number; history: FinishedDive[] };
+  /** Latest replay of each past daily dive, keyed by dive number. */
+  archive: Record<number, FinishedDive>;
   active: ActiveDive | null;
   settings: Settings;
   seenHowTo: boolean;
@@ -72,6 +85,8 @@ export function emptySave(): SaveData {
   return {
     version: VERSION,
     daily: {},
+    unlimited: { next: 1, history: [] },
+    archive: {},
     active: null,
     settings: { ...DEFAULT_SETTINGS },
     seenHowTo: false,
@@ -79,17 +94,34 @@ export function emptySave(): SaveData {
   };
 }
 
+/**
+ * Fills in anything an older save is missing. Saves from before Unlimited
+ * and Archive existed have no `mode` on their dives: those were all daily.
+ */
+export function normaliseSave(raw: unknown): SaveData {
+  if (typeof raw !== 'object' || raw === null) return emptySave();
+  const data = raw as Partial<SaveData>;
+  if (data.version !== VERSION) return emptySave();
+  const base = emptySave();
+  const withMode = <T extends { mode?: DiveMode }>(d: T, mode: DiveMode) => ({ ...d, mode: d.mode ?? mode });
+  const daily = Object.fromEntries(
+    Object.entries(data.daily ?? {}).map(([n, d]) => [n, withMode(d, 'daily')]),
+  ) as SaveData['daily'];
+  return {
+    ...base,
+    ...data,
+    daily,
+    unlimited: { ...base.unlimited, ...data.unlimited },
+    archive: data.archive ?? {},
+    active: data.active ? (withMode(data.active, 'daily') as ActiveDive) : null,
+    settings: { ...DEFAULT_SETTINGS, ...data.settings },
+  };
+}
+
 export function loadSave(): SaveData {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return emptySave();
-    const data = JSON.parse(raw) as Partial<SaveData>;
-    if (data.version !== VERSION) return emptySave();
-    return {
-      ...emptySave(),
-      ...data,
-      settings: { ...DEFAULT_SETTINGS, ...data.settings },
-    } as SaveData;
+    return raw ? normaliseSave(JSON.parse(raw)) : emptySave();
   } catch {
     return emptySave();
   }
@@ -105,6 +137,7 @@ export function writeSave(data: SaveData): void {
 
 export function finishDive(active: ActiveDive, now: number): FinishedDive {
   return {
+    mode: active.mode,
     diveNumber: active.diveNumber,
     dateKey: active.dateKey,
     promptIds: active.promptIds,
@@ -112,4 +145,27 @@ export function finishDive(active: ActiveDive, now: number): FinishedDive {
     total: totalScore(active.rounds),
     finishedAt: now,
   };
+}
+
+/** Files a finished dive in the right place for its mode. */
+export function recordFinished(save: SaveData, done: FinishedDive): SaveData {
+  switch (done.mode) {
+    case 'daily':
+      return { ...save, active: null, daily: { ...save.daily, [done.diveNumber]: done } };
+    case 'unlimited':
+      return {
+        ...save,
+        active: null,
+        unlimited: { ...save.unlimited, history: [...save.unlimited.history, done] },
+      };
+    case 'archive':
+      return { ...save, active: null, archive: { ...save.archive, [done.diveNumber]: done } };
+  }
+}
+
+/** The bit after "SINKER" in share text and headers: "#42", "∞ #7", "#12 ⟲". */
+export function diveLabel(mode: DiveMode, diveNumber: number): string {
+  if (mode === 'unlimited') return `∞ #${diveNumber}`;
+  if (mode === 'archive') return `#${diveNumber} ⟲`;
+  return `#${diveNumber}`;
 }
