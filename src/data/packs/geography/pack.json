@@ -1,0 +1,15 @@
+{
+  "id": "geography",
+  "title": "Geography",
+  "short": "Geography",
+  "blurb": "Islands, rivers, deserts and mountains, beyond the daily atlas.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Off the Map",
+      "promptIds": ["island-nations", "european-rivers", "deserts", "mountain-ranges", "landlocked-countries", "seas", "summer-olympic-hosts"]
+    },
+    { "title": "Borderlands", "promptIds": [] },
+    { "title": "Far Horizons", "promptIds": [] }
+  ]
+}

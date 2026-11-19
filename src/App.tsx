@@ -10,21 +10,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buddyById, BUDDIES } from './art/creatures';
 import { sound } from './audio/sound';
-import { DAILY_POOL_IDS, loadPrompts } from './data';
+import { DAILY_POOL_IDS, loadPrompts, PACKS, packById } from './data';
 import { Modal } from './components/Modal';
 import { Ocean } from './components/Ocean';
 import { useToast } from './components/Toast';
 import { dateKeyAt, dateKeyForDive, dealDive, dealUnlimited, diveNumberFor } from './logic/daily';
 import { depthForPoints, type RoundResult } from './logic/scoring';
+import { chapterKey, nextChapter } from './logic/packs';
 import { computeStats, STREAK_MILESTONES } from './logic/stats';
+import { themeById } from './logic/theme';
 import { computeStreak } from './logic/streak';
 import type { Prompt } from './logic/types';
 import { Dive } from './screens/Dive';
-import { ArchivePanel, BuddiesPanel, HowToPlay, SettingsPanel, StatsPanel } from './screens/Panels';
+import { ArchivePanel, BuddiesPanel, HowToPlay, PacksPanel, SettingsPanel, StatsPanel } from './screens/Panels';
 import { Results } from './screens/Results';
 import { Title } from './screens/Title';
 import { useNow, useReducedMotion } from './state/hooks';
 import {
+  diveLabel,
   finishDive,
   loadSave,
   recordFinished,
@@ -35,9 +38,19 @@ import {
 } from './state/save';
 
 type Screen = 'title' | 'dive' | 'results';
-type Panel = 'menu' | 'howto' | 'settings' | 'stats' | 'buddies' | 'archive' | null;
+type Panel = 'menu' | 'howto' | 'settings' | 'stats' | 'buddies' | 'archive' | 'packs' | null;
 /** Which finished dive the results screen shows. null = today's daily. */
-type Viewing = { mode: DiveMode; diveNumber: number } | null;
+type Viewing = { mode: DiveMode; diveNumber: number; packId?: string } | null;
+
+const MODE_NAME: Record<DiveMode, string> = { daily: 'daily', unlimited: 'endless', archive: 'archive', pack: 'pack' };
+
+/** "#42", "∞ #7", "#12 ⟲", "Words 2". */
+const labelFor = (d: { mode: DiveMode; diveNumber: number; packId?: string }) =>
+  diveLabel(d.mode, d.diveNumber, packById(d.packId)?.short);
+
+/** Ocean for everything except packs that ask for another theme (Sports → pitch). */
+const themeFor = (d: { mode: DiveMode; packId?: string } | null | undefined) =>
+  themeById(d?.mode === 'pack' ? packById(d.packId)?.theme : 'ocean');
 
 function initialSave(): SaveData {
   const save = loadSave();
@@ -51,6 +64,7 @@ function findFinished(save: SaveData, viewing: Viewing, today: number): Finished
   if (!viewing) return save.daily[today];
   if (viewing.mode === 'unlimited') return save.unlimited.history.find((d) => d.diveNumber === viewing.diveNumber);
   if (viewing.mode === 'archive') return save.archive[viewing.diveNumber];
+  if (viewing.mode === 'pack') return save.packs[chapterKey(viewing.packId ?? '', viewing.diveNumber)];
   return save.daily[viewing.diveNumber];
 }
 
@@ -71,7 +85,7 @@ export function App() {
   const [viewing, setViewing] = useState<Viewing>(null);
   const [panel, setPanel] = useState<Panel>(save.seenHowTo ? null : 'howto');
   const [prompts, setPrompts] = useState<Prompt[] | null>(null);
-  const [diveDepth, setDiveDepth] = useState(0);
+  const [diveScore, setDiveScore] = useState(0);
   const toast = useToast();
   const { settings } = save;
 
@@ -140,7 +154,7 @@ export function App() {
       toast.show(
         active.mode === 'daily'
           ? "Finish today's dive first"
-          : `Finish or abandon your ${active.mode === 'unlimited' ? 'endless' : 'archive'} dive first`,
+          : `Finish or abandon your ${MODE_NAME[active.mode]} dive first`,
       );
       setPanel(null);
       setScreen('dive');
@@ -150,13 +164,21 @@ export function App() {
   );
 
   const startDive = useCallback(
-    async (mode: DiveMode, diveNumber: number, promptIds: string[], diveDateKey: string) => {
+    async (mode: DiveMode, diveNumber: number, promptIds: string[], diveDateKey: string, packId?: string) => {
       sound.unlock();
       // Make sure the prompts are downloaded before the clock starts.
       await loadPrompts(promptIds);
       update((s) => ({
         ...s,
-        active: { mode, diveNumber, dateKey: diveDateKey, promptIds, rounds: [], roundStartedAt: Date.now() },
+        active: {
+          mode,
+          diveNumber,
+          ...(packId ? { packId } : {}),
+          dateKey: diveDateKey,
+          promptIds,
+          rounds: [],
+          roundStartedAt: Date.now(),
+        },
         unlimited: mode === 'unlimited' ? { ...s.unlimited, next: diveNumber + 1 } : s.unlimited,
       }));
       setPanel(null);
@@ -211,6 +233,25 @@ export function App() {
     [save.daily, startDive],
   );
 
+  const openPacks = useCallback(() => {
+    if (blockedByActive('pack')) return;
+    if (save.active) {
+      setPanel(null);
+      setScreen('dive');
+      return;
+    }
+    setPanel('packs');
+  }, [blockedByActive, save.active]);
+
+  const playChapter = useCallback(
+    async (packId: string, chapter: number) => {
+      const ch = packById(packId)?.chapters[chapter - 1];
+      if (!ch) return;
+      await startDive('pack', chapter, ch.promptIds, today.dateKey, packId);
+    },
+    [startDive, today.dateKey],
+  );
+
   const abandon = useCallback(() => {
     update((s) => (s.active && s.active.mode !== 'daily' ? { ...s, active: null } : s));
     setPanel(null);
@@ -238,7 +279,7 @@ export function App() {
     if (!save.active) return;
     const done = finishDive(save.active, Date.now());
     update((s) => recordFinished(s, done));
-    setViewing(done.mode === 'daily' ? null : { mode: done.mode, diveNumber: done.diveNumber });
+    setViewing(done.mode === 'daily' ? null : { mode: done.mode, diveNumber: done.diveNumber, packId: done.packId });
     setScreen('results');
     window.scrollTo(0, 0);
     sound.fanfare();
@@ -256,14 +297,51 @@ export function App() {
   }, [save.active, save.daily, update, toast]);
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const oceanDepth = screen === 'dive' ? diveDepth : screen === 'results' && viewed ? depthForPoints(viewed.total) : 0;
+  const scenePoints = screen === 'dive' ? diveScore : screen === 'results' && viewed ? viewed.total : 0;
+  const oceanDepth = depthForPoints(scenePoints);
   useEffect(() => sound.setDepth(oceanDepth), [oceanDepth]);
 
   const canAbandon = screen === 'dive' && save.active && save.active.mode !== 'daily';
+  const sceneTheme = screen === 'dive' ? themeFor(save.active) : screen === 'results' ? themeFor(viewed) : themeFor(null);
+  const finishedChapters = useMemo(() => new Set(Object.keys(save.packs)), [save.packs]);
+
+  /** Results screen: header line and the "keep diving" buttons, per mode. */
+  const resultsExtras = (dive: FinishedDive) => {
+    const label = labelFor(dive);
+    const heading =
+      dive.mode === 'unlimited'
+        ? `endless dive ${label} complete`
+        : dive.mode === 'archive'
+          ? `archive dive ${label} complete`
+          : dive.mode === 'pack'
+            ? `${packById(dive.packId)?.title ?? 'pack'} · chapter ${dive.diveNumber} complete`
+            : `dive ${label} complete`;
+    const pack = packById(dive.packId);
+    const next = pack ? nextChapter(pack, dive.diveNumber, finishedChapters) : null;
+    const actions =
+      dive.mode === 'pack'
+        ? [
+            ...(next && pack
+              ? [{ label: `▶ Chapter ${next}`, onClick: () => void playChapter(pack.id, next), primary: true }]
+              : []),
+            { label: '▦ Packs', onClick: openPacks, primary: !next },
+            ...(next ? [] : [{ label: '∞ Unlimited', onClick: () => void beginUnlimited() }]),
+          ]
+        : [
+            {
+              label: dive.mode === 'unlimited' ? '∞ Dive again' : '∞ Unlimited',
+              onClick: () => void beginUnlimited(),
+              primary: dive.mode === 'unlimited',
+            },
+            { label: '⟲ Archive', onClick: openArchive, primary: dive.mode === 'archive' },
+            { label: '▦ Packs', onClick: openPacks },
+          ];
+    return { label, heading, actions };
+  };
 
   return (
     <>
-      <Ocean depth={oceanDepth} reducedMotion={reduced} />
+      <Ocean depth={oceanDepth} reducedMotion={reduced} pitch={sceneTheme.id === 'pitch'} />
 
       <button className="icon-btn menu-btn" onClick={() => setPanel('menu')} aria-label="Menu">
         ☰
@@ -285,6 +363,7 @@ export function App() {
           onBegin={beginDaily}
           onUnlimited={beginUnlimited}
           onArchive={openArchive}
+          onPacks={openPacks}
           buddy={buddySprite}
         />
       )}
@@ -297,7 +376,9 @@ export function App() {
           onRoundResult={onRoundResult}
           onNextRound={onNextRound}
           onFinish={onFinish}
-          onDepthChange={setDiveDepth}
+          onScoreChange={setDiveScore}
+          theme={sceneTheme}
+          modeLabel={labelFor(save.active)}
           buddy={buddySprite}
           colourblind={settings.colourblind}
         />
@@ -310,8 +391,8 @@ export function App() {
           streak={streak}
           onToast={toast.show}
           buddy={buddySprite}
-          onUnlimited={beginUnlimited}
-          onArchive={openArchive}
+          theme={sceneTheme}
+          {...resultsExtras(viewed)}
         />
       )}
 
@@ -332,6 +413,9 @@ export function App() {
           <button className="btn" onClick={openArchive}>
             ⟲ Archive
           </button>
+          <button className="btn" onClick={openPacks}>
+            ▦ Packs
+          </button>
           <button className="btn" onClick={() => setPanel('stats')}>
             ▤ Stats
           </button>
@@ -347,7 +431,7 @@ export function App() {
         </nav>
         {canAbandon && (
           <button className="btn btn-abandon" onClick={abandon}>
-            Abandon this {save.active?.mode === 'unlimited' ? 'endless' : 'archive'} dive
+            Abandon this {save.active ? MODE_NAME[save.active.mode] : ''} dive
           </button>
         )}
       </Modal>
@@ -381,6 +465,10 @@ export function App() {
 
       <Modal open={panel === 'archive'} title="Archive" onClose={() => setPanel(null)}>
         <ArchivePanel today={today.diveNumber} daily={save.daily} archive={save.archive} onPlay={playArchive} />
+      </Modal>
+
+      <Modal open={panel === 'packs'} title="Themed packs" onClose={() => setPanel(null)}>
+        <PacksPanel packs={PACKS} results={save.packs} onPlay={(id, n) => void playChapter(id, n)} />
       </Modal>
 
       {toast.element}

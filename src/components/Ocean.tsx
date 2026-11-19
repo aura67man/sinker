@@ -7,6 +7,8 @@ import './ocean.css';
 interface Props {
   depth: number;
   reducedMotion: boolean;
+  /** Sports pack: a football field instead of water. */
+  pitch?: boolean;
 }
 
 const FLAKES = 36;
@@ -23,7 +25,7 @@ function volcanoOpacity(depth: number): number {
  * Full-screen water behind everything. Colour eases towards the current
  * depth; "marine snow" drifts upward and thins out as you go deeper.
  */
-export function Ocean({ depth, reducedMotion }: Props) {
+export function Ocean({ depth, reducedMotion, pitch = false }: Props) {
   // Fixed random layout so flakes don't jump around on re-render.
   const flakes = useMemo(
     () =>
@@ -36,6 +38,14 @@ export function Ocean({ depth, reducedMotion }: Props) {
     [],
   );
   const visible = Math.round(FLAKES * snowDensity(depth));
+
+  if (pitch) {
+    return (
+      <div className="pitch" aria-hidden>
+        <div className="pitch-lines" />
+      </div>
+    );
+  }
 
   return (
     <div className="ocean" style={{ backgroundColor: waterColour(depth) }} aria-hidden>

@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validatePrompt, type ValidationReport } from '../src/logic/validate';
+import { validatePack, validatePrompt, type ValidationReport } from '../src/logic/validate';
 import { TIER_ORDER, TIERS } from '../src/logic/tiers';
 
 const root = join(fileURLToPath(import.meta.url), '..', '..');
@@ -23,7 +23,7 @@ function jsonFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const full = join(dir, name);
     if (statSync(full).isDirectory()) return jsonFiles(full);
-    return name.endsWith('.json') && !name.startsWith('_') ? [full] : [];
+    return name.endsWith('.json') && name !== 'pack.json' && !name.startsWith('_') ? [full] : [];
   });
 }
 
@@ -52,6 +52,23 @@ for (const file of files) {
   if (seenIds.has(id)) report.errors.push(`duplicate prompt id, also used by ${seenIds.get(id)}`);
   seenIds.set(id, rel);
   reports.push({ ...report, file: rel });
+}
+
+// ── Pack manifests ───────────────────────────────────────────────────────────
+const packsDir = join(dataDir, 'packs');
+if (existsSync(packsDir)) {
+  for (const folder of readdirSync(packsDir)) {
+    const manifest = join(packsDir, folder, 'pack.json');
+    if (!existsSync(manifest)) continue;
+    const ids = jsonFiles(join(packsDir, folder)).map((f) => basename(f, '.json'));
+    let raw: unknown;
+    try {
+      raw = JSON.parse(readFileSync(manifest, 'utf8'));
+    } catch (err) {
+      raw = null;
+    }
+    reports.push({ ...validatePack(raw, folder, ids), file: relative(root, manifest) });
+  }
 }
 
 // ── Summary table ────────────────────────────────────────────────────────────

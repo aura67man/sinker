@@ -1,0 +1,15 @@
+{
+  "id": "sports",
+  "title": "Sports",
+  "short": "Sports",
+  "blurb": "Played on a football field: every point is a yard gained.",
+  "theme": "pitch",
+  "chapters": [
+    {
+      "title": "Kick-off",
+      "promptIds": ["nfl-teams", "f1-world-champions", "nba-teams", "cricket-fielding-positions", "martial-arts", "afl-clubs", "winter-olympic-sports"]
+    },
+    { "title": "Second Half", "promptIds": [] },
+    { "title": "Extra Time", "promptIds": [] }
+  ]
+}

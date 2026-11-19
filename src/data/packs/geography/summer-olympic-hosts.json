@@ -1,0 +1,31 @@
+{
+  "id": "summer-olympic-hosts",
+  "prompt": "Name a city that has hosted the Summer Olympics",
+  "category": "geography",
+  "qualifiers": ["Games already held", "1896 to 2024"],
+  "answers": [
+    {"name": "London", "tier": "shallows", "fact": "Hosted in 1908, 1948 and 2012."},
+    {"name": "Sydney", "tier": "shallows", "fact": "Cathy Freeman lit the cauldron and won the 400 m in 2000."},
+    {"name": "Beijing", "tier": "shallows", "fact": "The first city to host both the Summer and Winter Games."},
+    {"name": "Tokyo", "tier": "shallows", "fact": "Its 2020 Games were held in 2021, without spectators."},
+    {"name": "Paris", "tier": "shallows", "fact": "Hosted exactly 100 years apart, in 1924 and 2024."},
+    {"name": "Athens", "tier": "shallows", "fact": "Hosted the first modern Games, in 1896."},
+    {"name": "Rio de Janeiro", "aliases": ["rio"], "tier": "shallows", "fact": "The first South American host, in 2016."},
+    {"name": "St Louis", "aliases": ["st. louis", "saint louis"], "tier": "red-herring", "fact": "Its 1904 marathon 'winner' was caught having ridden in a car."},
+    {"name": "Los Angeles", "aliases": ["la"], "tier": "shoal", "fact": "Will host for a third time in 2028."},
+    {"name": "Barcelona", "tier": "shoal", "fact": "The 1992 Games transformed its waterfront."},
+    {"name": "Atlanta", "tier": "shoal", "fact": "Hosted the centennial Games in 1996."},
+    {"name": "Seoul", "tier": "shoal", "fact": "Ben Johnson's 100 m disqualification made headlines in 1988."},
+    {"name": "Moscow", "tier": "shoal", "fact": "Boycotted by the US and many other countries in 1980."},
+    {"name": "Montreal", "tier": "shoal", "fact": "Took about 30 years to pay off its 1976 Olympic debts."},
+    {"name": "Munich", "tier": "shoal", "fact": "Its Olympic Park has a famous tent-like roof."},
+    {"name": "Mexico City", "tier": "shoal", "fact": "The altitude helped Bob Beamon's huge long jump in 1968."},
+    {"name": "Rome", "tier": "shoal", "fact": "Abebe Bikila won the 1960 marathon barefoot."},
+    {"name": "Berlin", "tier": "shoal", "fact": "Jesse Owens won four golds there in 1936."},
+    {"name": "Melbourne", "tier": "shoal", "fact": "Its 1956 horse events were held in Stockholm because of quarantine rules."},
+    {"name": "Amsterdam", "tier": "shoal", "fact": "The Olympic flame was first lit there, in 1928."},
+    {"name": "Helsinki", "tier": "shoal", "fact": "Emil Zátopek won three long-distance golds there in 1952."},
+    {"name": "Stockholm", "tier": "twilight", "fact": "Its 1912 stadium is still in use."},
+    {"name": "Antwerp", "tier": "gem", "fact": "The Olympic rings flag first flew there in 1920."}
+  ]
+}

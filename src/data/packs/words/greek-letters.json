@@ -1,0 +1,31 @@
+{
+  "id": "greek-letters",
+  "prompt": "Name a letter of the Greek alphabet",
+  "category": "words",
+  "answers": [
+    {"name": "Alpha", "tier": "shallows", "fact": "From the Phoenician 'aleph', meaning ox."},
+    {"name": "Beta", "tier": "shallows", "fact": "Alpha plus beta gave us the word 'alphabet'."},
+    {"name": "Omega", "tier": "shallows", "fact": "The last letter: 'the alpha and the omega'."},
+    {"name": "Pi", "tier": "shallows", "fact": "Stands for the ratio of a circle's circumference to its diameter."},
+    {"name": "Delta", "tier": "shallows", "fact": "Its triangle shape named river deltas."},
+    {"name": "Gamma", "tier": "shallows", "fact": "Gamma rays are the highest-energy light."},
+    {"name": "Sigma", "tier": "shallows", "fact": "Has a special form, ς, used at the end of words."},
+    {"name": "Omicron", "tier": "red-herring", "fact": "'Little O', and the name of a 2021 COVID variant."},
+    {"name": "Theta", "tier": "shoal", "fact": "Mathematicians use it for angles."},
+    {"name": "Epsilon", "tier": "shoal", "fact": "'Bare E'; maths uses it for a tiny amount."},
+    {"name": "Lambda", "tier": "shoal", "fact": "Its capital looks like an upside-down V."},
+    {"name": "Mu", "tier": "shoal", "fact": "Stands for 'micro', a millionth, as in μm."},
+    {"name": "Zeta", "tier": "shoal", "fact": "The Riemann zeta function is one of maths' great unsolved puzzles."},
+    {"name": "Eta", "tier": "shoal", "fact": "Its capital looks just like an English H."},
+    {"name": "Kappa", "tier": "shoal", "fact": "Became internet slang via a Twitch emote."},
+    {"name": "Rho", "tier": "shoal", "fact": "Looks like a P but sounds like an R."},
+    {"name": "Tau", "tier": "shoal", "fact": "Some mathematicians argue 2π, called tau, is the better circle constant."},
+    {"name": "Phi", "tier": "shoal", "fact": "Stands for the golden ratio, about 1.618."},
+    {"name": "Psi", "tier": "shoal", "fact": "The symbol of psychology."},
+    {"name": "Chi", "tier": "shoal", "fact": "Looks like an X; the X in 'Xmas' comes from it."},
+    {"name": "Iota", "tier": "shoal", "fact": "The smallest letter: hence 'not one iota'."},
+    {"name": "Upsilon", "tier": "twilight", "fact": "'Bare U'."},
+    {"name": "Nu", "tier": "twilight", "fact": "Its lower case looks like a v."},
+    {"name": "Xi", "tier": "gem", "fact": "A two-letter Scrabble favourite."}
+  ]
+}

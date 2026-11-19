@@ -13,6 +13,7 @@ import type { StreakInfo } from '../logic/streak';
 import { TIERS, TIER_ORDER, type Outcome } from '../logic/tiers';
 import type { Answer } from '../logic/types';
 import { dateKeyForDive } from '../logic/daily';
+import { chapterKey, chapterStatus, isPlayable, type Pack } from '../logic/packs';
 import type { FinishedDive, MotionSetting, Settings } from '../state/save';
 import { PRACTICE_PROMPT } from '../data/practice';
 
@@ -367,6 +368,82 @@ export function ArchivePanel({ today, daily, archive, onPlay }: ArchiveProps) {
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+// ── Themed packs ─────────────────────────────────────────────────────────────
+
+interface PacksProps {
+  packs: readonly Pack[];
+  /** Best result per chapter, keyed "packId:chapter". */
+  results: Record<string, FinishedDive>;
+  onPlay: (packId: string, chapter: number) => void;
+}
+
+/** Two levels in one modal: the pack list, then a pack's chapters. */
+export function PacksPanel({ packs, results, onPlay }: PacksProps) {
+  const [openPack, setOpenPack] = useState<string | null>(null);
+  const finished = useMemo(() => new Set(Object.keys(results)), [results]);
+  const pack = packs.find((p) => p.id === openPack);
+
+  if (!pack) {
+    return (
+      <div className="packs">
+        <p className="muted small">
+          Themed dives, chapter by chapter. Finish a chapter to unlock the next. Packs don't count towards your streak
+          or stats.
+        </p>
+        <ul className="pack-list">
+          {packs.map((p) => {
+            const playable = p.chapters.filter(isPlayable).length;
+            const done = p.chapters.filter((_, i) => finished.has(chapterKey(p.id, i + 1))).length;
+            return (
+              <li key={p.id}>
+                <button className={`pack-card theme-${p.theme}`} onClick={() => setOpenPack(p.id)}>
+                  <span className="pack-title">{p.title}</span>
+                  <span className="muted small">{p.blurb}</span>
+                  <span className="pack-progress">
+                    {done}/{playable} chapters done{p.theme === 'pitch' ? ' · played in yards' : ''}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <div className="packs">
+      <button className="link-btn pack-back" onClick={() => setOpenPack(null)}>
+        ← All packs
+      </button>
+      <h3 className="pack-heading">{pack.title}</h3>
+      <p className="muted small">{pack.blurb}</p>
+      <ol className="chapter-list">
+        {pack.chapters.map((ch, i) => {
+          const n = i + 1;
+          const status = chapterStatus(pack, n, finished);
+          const best = results[chapterKey(pack.id, n)];
+          const canPlay = status === 'open' || status === 'done';
+          return (
+            <li key={n}>
+              <button className={`chapter-row status-${status}`} disabled={!canPlay} onClick={() => onPlay(pack.id, n)}>
+                <span className="chapter-num">{n}</span>
+                <span className="chapter-title">{ch.title}</span>
+                <span className="chapter-status">
+                  {status === 'done' && best && <>best {best.total}</>}
+                  {status === 'open' && <>dive ▶</>}
+                  {status === 'locked' && <>🔒 finish {n - 1}</>}
+                  {status === 'coming-soon' && <>coming soon</>}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

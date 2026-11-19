@@ -13,13 +13,13 @@ import { TierIcon } from '../components/TierIcon';
 import { DepthScale } from '../components/DepthScale';
 import { TimerRing } from '../components/TimerRing';
 import { PROMPTS_PER_DIVE } from '../config';
-import { LANDMARKS } from '../logic/landmarks';
 import { buildIndex } from '../logic/match';
 import { answerTimeLeft, previewLeft, roundPhase, submitAnswer, type PendingSuggestion } from '../logic/round';
-import { depthForPoints, totalScore, type RoundResult } from '../logic/scoring';
+import { totalScore, type RoundResult } from '../logic/scoring';
+import { distanceFor, OCEAN, type Theme } from '../logic/theme';
 import { TIERS, TIER_ORDER } from '../logic/tiers';
 import type { Prompt } from '../logic/types';
-import { diveLabel, type ActiveDive } from '../state/save';
+import type { ActiveDive } from '../state/save';
 import { useNow } from '../state/hooks';
 import './dive.css';
 
@@ -33,7 +33,12 @@ interface Props {
   onRoundResult: (result: RoundResult) => void;
   onNextRound: () => void;
   onFinish: () => void;
-  onDepthChange: (depth: number) => void;
+  /** Reports the running score, so the background can follow along. */
+  onScoreChange: (points: number) => void;
+  /** Ocean (metres of depth) or pitch (yards gained). */
+  theme?: Theme;
+  /** "∞ #3", "#1 ⟲", "Words 2"... shown on the prompt card for non-daily dives. */
+  modeLabel: string;
   /** Sprite of the chosen dive buddy. */
   buddy: SpriteDef | null;
   /** Colour-blind mode: icons in the progress pips. */
@@ -47,17 +52,19 @@ export function Dive({
   onRoundResult,
   onNextRound,
   onFinish,
-  onDepthChange,
+  onScoreChange,
+  theme = OCEAN,
+  modeLabel,
   buddy,
   colourblind,
 }: Props) {
   const inRound = active.roundStartedAt !== null && active.rounds.length < PROMPTS_PER_DIVE;
   const total = totalScore(active.rounds);
-  const depth = depthForPoints(total);
+  const depth = distanceFor(total, theme);
   const lastIndex = active.rounds.length - 1;
 
   // Tell the ocean behind us how deep we are.
-  useEffect(() => onDepthChange(depth), [depth, onDepthChange]);
+  useEffect(() => onScoreChange(total), [total, onScoreChange]);
 
   return (
     <div className="dive">
@@ -65,18 +72,20 @@ export function Dive({
         rounds={active.rounds}
         current={inRound ? active.rounds.length : lastIndex}
         depth={depth}
+        theme={theme}
         score={total}
         animate={animate}
         colourblind={colourblind}
       />
-      <DepthScale depth={depth} animate={animate} />
+      <DepthScale distance={depth} animate={animate} theme={theme} />
 
       {inRound ? (
         <RoundView
           key={active.rounds.length}
           prompt={prompts[active.rounds.length]}
           roundNumber={active.rounds.length + 1}
-          modeTag={active.mode === 'daily' ? '' : diveLabel(active.mode, active.diveNumber)}
+          modeTag={active.mode === 'daily' ? '' : modeLabel}
+          theme={theme}
           startedAt={active.roundStartedAt!}
           onResult={onRoundResult}
           buddy={buddy}
@@ -86,7 +95,8 @@ export function Dive({
           key={lastIndex}
           prompt={prompts[lastIndex]}
           result={active.rounds[lastIndex]}
-          depthBefore={depthForPoints(totalScore(active.rounds.slice(0, -1)))}
+          depthBefore={distanceFor(totalScore(active.rounds.slice(0, -1)), theme)}
+          theme={theme}
           isLast={active.rounds.length >= PROMPTS_PER_DIVE}
           animate={animate}
           onNext={active.rounds.length >= PROMPTS_PER_DIVE ? onFinish : onNextRound}
@@ -103,6 +113,7 @@ function Hud({
   rounds,
   current,
   depth,
+  theme,
   score,
   animate,
   colourblind,
@@ -110,6 +121,7 @@ function Hud({
   rounds: RoundResult[];
   current: number;
   depth: number;
+  theme: Theme;
   score: number;
   animate: boolean;
   colourblind: boolean;
@@ -119,8 +131,11 @@ function Hud({
   return (
     <header className="hud">
       <div className="hud-box">
-        <span className="hud-label">depth</span>
-        <span className="hud-value depth">{fmt(shownDepth)}m</span>
+        <span className="hud-label">{theme.distanceLabel}</span>
+        <span className="hud-value depth">
+          {fmt(shownDepth)}
+          {theme.unit}
+        </span>
       </div>
       <div className={`pips ${colourblind ? 'cb' : ''}`} aria-label={`Prompt ${Math.min(current + 1, PROMPTS_PER_DIVE)} of ${PROMPTS_PER_DIVE}`}>
         <div className="pip-row">
@@ -182,13 +197,14 @@ interface RoundProps {
   buddy: SpriteDef | null;
   /** "∞ #3" or "#1 ⟲" for non-daily dives, so you know which mode you're in. */
   modeTag: string;
+  theme: Theme;
 }
 
 type Feedback = { kind: 'no-echo' | 'suggest'; id: number } | null;
 
 const SHAKE: Keyframe[] = [0, -8, 7, -5, 3, 0].map((x) => ({ transform: `translateX(${x}px)` }));
 
-function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag }: RoundProps) {
+function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag, theme }: RoundProps) {
   const now = useNow();
   const phase = roundPhase(startedAt, now);
   const index = useMemo(() => buildIndex(prompt), [prompt]);
@@ -272,7 +288,9 @@ function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag }:
             ))}
           </ul>
         ) : null}
-        <p className="hint">▼ rarer answers sink deeper ▼</p>
+        <p className="hint">
+          {theme.id === 'pitch' ? '► rarer answers gain more ground ►' : '▼ rarer answers sink deeper ▼'}
+        </p>
       </div>
 
       <form ref={formRef} className="answer-row" onSubmit={submit}>
@@ -316,8 +334,8 @@ function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag }:
 
 // ── Sink + reveal ────────────────────────────────────────────────────────────
 
-/** Depths of the tier lines in the sink column, shallowest first. */
-const LINE_DEPTHS = TIER_ORDER.map((t) => ({ tier: t, depth: depthForPoints(TIERS[t].points) }));
+/** Tier lines in the sink column, shallowest first, as a fraction of a Trench Gem's drop. */
+const LINE_FRACTIONS = TIER_ORDER.map((t) => ({ tier: t, fraction: TIERS[t].points / TIERS.gem.points }));
 /** Sink column height: shorter on small phones so the whole reveal fits on screen. */
 const columnPx = () => Math.round(Math.min(280, Math.max(170, window.innerHeight * 0.3)));
 
@@ -325,25 +343,27 @@ interface RevealProps {
   prompt: Prompt;
   result: RoundResult;
   depthBefore: number;
+  theme: Theme;
   isLast: boolean;
   animate: boolean;
   onNext: () => void;
   buddy: SpriteDef | null;
 }
 
-function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, buddy }: RevealProps) {
+function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, buddy, theme }: RevealProps) {
   const tier = TIERS[result.outcome];
   const isMiss = result.outcome === 'miss';
-  const metres = depthForPoints(tier.points);
+  const metres = distanceFor(tier.points, theme);
   const depthAfter = depthBefore + metres;
+  const fraction = tier.points / TIERS.gem.points;
   const answer = prompt.answers.find((a) => a.name === result.answer);
   // Show only the deepest landmark passed this round, to keep the reveal compact.
-  const passed = LANDMARKS.filter((l) => l.depth > depthBefore && l.depth <= depthAfter).slice(-1);
+  const passed = theme.landmarks.filter((l) => l.depth > depthBefore && l.depth <= depthAfter).slice(-1);
   const chipRef = useRef<HTMLDivElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
   const [settled, setSettled] = useState(!animate);
   const [column] = useState(columnPx);
-  const yFor = (metres: number) => (metres / 1000) * column;
+  const yFor = (frac: number) => frac * column;
 
   useEffect(() => {
     const chip = chipRef.current;
@@ -352,7 +372,7 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, budd
       return;
     }
     if (!isMiss) sound.splashAndSink(1.3);
-    const target = isMiss ? 0 : (metres / 1000) * column;
+    const target = isMiss ? 0 : fraction * column;
     // Accelerate like something heavy, then a small bounce as it settles.
     const anim = chip.animate(
       isMiss
@@ -366,7 +386,7 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, budd
     );
     anim.finished.then(() => setSettled(true)).catch(() => undefined);
     return () => anim.cancel();
-  }, [animate, isMiss, metres, column]);
+  }, [animate, isMiss, fraction, column]);
 
   useEffect(() => {
     if (settled) sound.chime(result.outcome);
@@ -382,11 +402,11 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, budd
       <p className="reveal-prompt">{prompt.prompt}</p>
 
       <div className="sink-column" style={{ height: column + 24 }} aria-hidden>
-        {LINE_DEPTHS.map(({ tier: t, depth }) => (
+        {LINE_FRACTIONS.map(({ tier: t, fraction: f }) => (
           <div
             key={t}
             className={`tier-line tier-${t} ${t === result.outcome && settled ? 'hit' : ''}`}
-            style={{ top: yFor(depth) + 12 }}
+            style={{ top: yFor(f) + 12 }}
           >
             <span>
               <TierIcon tier={t} scale={1} /> {TIERS[t].label} · {TIERS[t].points}
@@ -396,7 +416,7 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, budd
         <div
           ref={chipRef}
           className={`chip tier-${result.outcome}`}
-          style={settled ? { transform: `translateY(${isMiss ? 0 : yFor(metres)}px)` } : undefined}
+          style={settled ? { transform: `translateY(${isMiss ? 0 : yFor(fraction)}px)` } : undefined}
         >
           <BathyCrew buddy={buddy} scale={2} />
           <span className="chip-tag">{isMiss ? '— — —' : `“${result.answer}”`}</span>
@@ -411,13 +431,18 @@ function RevealView({ prompt, result, depthBefore, isLast, animate, onNext, budd
         {!isMiss && <p className="reveal-answer">“{result.answer}”</p>}
         <p className="reveal-points">
           <span className={`tier-${result.outcome}`}>+{tier.points} pts</span>
-          {!isMiss && <> · sink {fmt(metres)} m</>}
+          {!isMiss && (
+            <>
+              {' '}
+              · {theme.verb} {fmt(metres)} {theme.unit}
+            </>
+          )}
         </p>
         <p className="reveal-flavour">{tier.flavour}</p>
         {answer && <p className="reveal-fact">{answer.fact}</p>}
         {passed.map((l) => (
           <p key={l.depth} className="reveal-landmark">
-            passing {fmt(l.depth)} m: {l.label}
+            passing {fmt(l.depth)} {theme.unit}: {l.label}
           </p>
         ))}
         <button ref={nextRef} className="btn btn-primary" onClick={onNext} disabled={!settled}>

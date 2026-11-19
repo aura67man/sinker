@@ -14,13 +14,16 @@ const VERSION = 1;
  * daily: today's shared dive (counts for streaks, stats and buddies).
  * unlimited: the Endless Dive, numbered, play as many as you like.
  * archive: a replay of a past daily dive.
+ * pack: a chapter of a themed pack (diveNumber is the chapter number).
  */
-export type DiveMode = 'daily' | 'unlimited' | 'archive';
+export type DiveMode = 'daily' | 'unlimited' | 'archive' | 'pack';
 
 /** A dive in progress. Rounds are appended as they finish. */
 export interface ActiveDive {
   mode: DiveMode;
   diveNumber: number;
+  /** Pack dives only. */
+  packId?: string;
   dateKey: string;
   promptIds: string[];
   rounds: RoundResult[];
@@ -34,6 +37,8 @@ export interface ActiveDive {
 export interface FinishedDive {
   mode: DiveMode;
   diveNumber: number;
+  /** Pack dives only. */
+  packId?: string;
   dateKey: string;
   promptIds: string[];
   rounds: RoundResult[];
@@ -65,6 +70,8 @@ export interface SaveData {
   unlimited: { next: number; history: FinishedDive[] };
   /** Latest replay of each past daily dive, keyed by dive number. */
   archive: Record<number, FinishedDive>;
+  /** Best result per pack chapter, keyed "packId:chapter". */
+  packs: Record<string, FinishedDive>;
   active: ActiveDive | null;
   settings: Settings;
   seenHowTo: boolean;
@@ -87,6 +94,7 @@ export function emptySave(): SaveData {
     daily: {},
     unlimited: { next: 1, history: [] },
     archive: {},
+    packs: {},
     active: null,
     settings: { ...DEFAULT_SETTINGS },
     seenHowTo: false,
@@ -113,6 +121,7 @@ export function normaliseSave(raw: unknown): SaveData {
     daily,
     unlimited: { ...base.unlimited, ...data.unlimited },
     archive: data.archive ?? {},
+    packs: data.packs ?? {},
     active: data.active ? (withMode(data.active, 'daily') as ActiveDive) : null,
     settings: { ...DEFAULT_SETTINGS, ...data.settings },
   };
@@ -139,6 +148,7 @@ export function finishDive(active: ActiveDive, now: number): FinishedDive {
   return {
     mode: active.mode,
     diveNumber: active.diveNumber,
+    ...(active.packId ? { packId: active.packId } : {}),
     dateKey: active.dateKey,
     promptIds: active.promptIds,
     rounds: active.rounds,
@@ -160,11 +170,19 @@ export function recordFinished(save: SaveData, done: FinishedDive): SaveData {
       };
     case 'archive':
       return { ...save, active: null, archive: { ...save.archive, [done.diveNumber]: done } };
+    case 'pack': {
+      // Keep the best attempt at each chapter.
+      const key = `${done.packId}:${done.diveNumber}`;
+      const prev = save.packs[key];
+      const best = prev && prev.total > done.total ? prev : done;
+      return { ...save, active: null, packs: { ...save.packs, [key]: best } };
+    }
   }
 }
 
-/** The bit after "SINKER" in share text and headers: "#42", "∞ #7", "#12 ⟲". */
-export function diveLabel(mode: DiveMode, diveNumber: number): string {
+/** The bit after "SINKER" in share text and headers: "#42", "∞ #7", "#12 ⟲", "Words 2". */
+export function diveLabel(mode: DiveMode, diveNumber: number, packShort?: string): string {
+  if (mode === 'pack') return `${packShort ?? 'Pack'} ${diveNumber}`;
   if (mode === 'unlimited') return `∞ #${diveNumber}`;
   if (mode === 'archive') return `#${diveNumber} ⟲`;
   return `#${diveNumber}`;

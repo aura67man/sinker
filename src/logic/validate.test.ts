@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validatePrompt } from './validate';
+import { validatePack, validatePrompt } from './validate';
 
 const answer = (name: string, tier = 'shoal', extra: object = {}) => ({ name, tier, fact: 'A fact.', ...extra });
 
@@ -41,5 +41,32 @@ describe('validatePrompt', () => {
   it('warns about thin answer lists', () => {
     const r = validatePrompt(base([answer('Ramen', 'gem')]), 'demo');
     expect(r.warnings.some((w) => w.includes('only 1 answers'))).toBe(true);
+  });
+});
+
+describe('validatePack', () => {
+  const seven = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+  const pack = (chapters: object[]) => ({ id: 'words', title: 'Words', short: 'Words', blurb: 'x', theme: 'ocean', chapters });
+
+  it('passes a good manifest with a coming-soon chapter', () => {
+    const r = validatePack(pack([{ title: 'One', promptIds: seven }, { title: 'Two', promptIds: [] }]), 'words', seven);
+    expect(r.errors).toEqual([]);
+  });
+  it('needs exactly seven prompts per playable chapter', () => {
+    const r = validatePack(pack([{ title: 'One', promptIds: seven.slice(0, 5) }]), 'words', seven);
+    expect(r.errors.some((e) => e.includes('needs 7 prompts'))).toBe(true);
+  });
+  it('catches missing files, reuse across chapters and folder mismatches', () => {
+    const r = validatePack(
+      pack([
+        { title: 'One', promptIds: seven },
+        { title: 'Two', promptIds: ['a', 'b', 'c', 'd', 'e', 'f', 'zzz'] },
+      ]),
+      'other',
+      seven,
+    );
+    expect(r.errors.some((e) => e.includes('does not match folder'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('used in more than one chapter'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('no prompt file "zzz.json"'))).toBe(true);
   });
 });

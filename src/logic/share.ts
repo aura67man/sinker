@@ -1,8 +1,7 @@
 import { GAME_NAME } from '../config';
-import { depthForPoints, totalScore, type RoundResult } from './scoring';
+import { totalScore, type RoundResult } from './scoring';
+import { formatDistance, OCEAN, type Theme } from './theme';
 import { TIERS } from './tiers';
-
-const fmt = (n: number) => n.toLocaleString('en-AU');
 
 /**
  * Spoiler-free share text:
@@ -10,10 +9,10 @@ const fmt = (n: number) => n.toLocaleString('en-AU');
  *   SINKER #42 — 525 pts · 5,250 m
  *   🦑🌟🐟🫧🏮🦑⬛
  *
- * `label` is the bit after the game name: "#42", "∞ #7", etc.
+ * `label` is the bit after the game name: "#42", "∞ #7", "Sports 1", etc.
  */
-export function buildShareText(label: string, results: readonly RoundResult[]): string {
+export function buildShareText(label: string, results: readonly RoundResult[], theme: Theme = OCEAN): string {
   const total = totalScore(results);
   const grid = results.map((r) => TIERS[r.outcome].emoji).join('');
-  return `${GAME_NAME} ${label} — ${fmt(total)} pts · ${fmt(depthForPoints(total))} m\n${grid}`;
+  return `${GAME_NAME} ${label} — ${total.toLocaleString('en-AU')} pts · ${formatDistance(total, theme)}\n${grid}`;
 }

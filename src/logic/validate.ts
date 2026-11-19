@@ -104,3 +104,48 @@ export function validatePrompt(raw: unknown, fileId: string): ValidationReport {
 
   return report;
 }
+
+/**
+ * Checks a pack manifest (packs/<id>/pack.json) against the prompt files in
+ * its folder. A chapter must list exactly seven prompts, or none at all
+ * (none = "coming soon").
+ */
+export function validatePack(raw: unknown, folderId: string, promptIdsInFolder: readonly string[]): ValidationReport {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const tierCounts = Object.fromEntries(TIER_IDS.map((t) => [t, 0])) as Record<TierId, number>;
+  const report: ValidationReport = { id: `${folderId}/pack`, errors, warnings, tierCounts, answerCount: 0 };
+  const p = raw as Record<string, unknown> | null;
+  if (!p || typeof p !== 'object') {
+    errors.push('pack.json is not an object');
+    return report;
+  }
+  if (p.id !== folderId) errors.push(`pack id "${String(p.id)}" does not match folder "${folderId}"`);
+  for (const key of ['title', 'short', 'blurb']) {
+    if (typeof p[key] !== 'string' || !(p[key] as string).trim()) errors.push(`missing "${key}"`);
+  }
+  if (p.theme !== 'ocean' && p.theme !== 'pitch') errors.push(`theme must be "ocean" or "pitch"`);
+  if (!Array.isArray(p.chapters) || p.chapters.length === 0) {
+    errors.push('"chapters" must be a non-empty list');
+    return report;
+  }
+  const inFolder = new Set(promptIdsInFolder);
+  const used = new Set<string>();
+  (p.chapters as { title?: unknown; promptIds?: unknown }[]).forEach((ch, i) => {
+    const where = `chapter ${i + 1}`;
+    if (typeof ch?.title !== 'string' || !ch.title.trim()) errors.push(`${where}: missing title`);
+    if (!Array.isArray(ch?.promptIds)) {
+      errors.push(`${where}: promptIds must be a list`);
+      return;
+    }
+    const ids = ch.promptIds as string[];
+    if (ids.length !== 0 && ids.length !== 7) errors.push(`${where}: needs 7 prompts (or 0 for coming soon), has ${ids.length}`);
+    for (const id of ids) {
+      if (!inFolder.has(id)) errors.push(`${where}: no prompt file "${id}.json" in this pack`);
+      if (used.has(id)) errors.push(`${where}: "${id}" is used in more than one chapter`);
+      used.add(id);
+    }
+  });
+  for (const id of promptIdsInFolder) if (!used.has(id)) warnings.push(`"${id}" isn't in any chapter yet`);
+  return report;
+}

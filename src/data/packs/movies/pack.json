@@ -1,0 +1,15 @@
+{
+  "id": "movies",
+  "title": "At the Movies",
+  "short": "Movies",
+  "blurb": "Pixar, Bond, Star Wars, Ghibli and more. Grab the popcorn.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Opening Night",
+      "promptIds": ["pixar-films", "bond-films", "star-wars-characters", "spielberg-films", "ghibli-films", "mcu-films", "tom-hanks-films"]
+    },
+    { "title": "The Sequel", "promptIds": [] },
+    { "title": "Director's Cut", "promptIds": [] }
+  ]
+}

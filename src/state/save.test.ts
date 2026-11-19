@@ -54,5 +54,26 @@ describe('diveLabel', () => {
     expect(diveLabel('daily', 42)).toBe('#42');
     expect(diveLabel('unlimited', 7)).toBe('∞ #7');
     expect(diveLabel('archive', 12)).toBe('#12 ⟲');
+    expect(diveLabel('pack', 2, 'Words')).toBe('Words 2');
+  });
+});
+
+describe('recordFinished for packs', () => {
+  it('keeps the best attempt per chapter', () => {
+    const chapter = (total: number) => ({
+      mode: 'pack' as const,
+      packId: 'words',
+      diveNumber: 1,
+      dateKey: 'x',
+      promptIds: [],
+      rounds: [],
+      total,
+      finishedAt: total,
+    });
+    let save = recordFinished(emptySave(), chapter(200));
+    save = recordFinished(save, chapter(150));
+    expect(save.packs['words:1'].total).toBe(200);
+    save = recordFinished(save, chapter(320));
+    expect(save.packs['words:1'].total).toBe(320);
   });
 });
