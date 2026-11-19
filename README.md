@@ -7,14 +7,23 @@ and the deeper Bathy, a tiny pixel bathysphere, sinks.
 Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
-> **Status: Phase 3.** The Daily Dive is fully playable, with pixel art,
-> synthesised sound, stats, dive buddies, colour-blind mode, a How to Play
-> with a practice dive, and 30 prompts (~2,150 answers). Unlimited and
-> Archive modes come next. The test bench and sprite gallery live at `?lab`.
+> **Status: Phase 4.** Daily Dive, ∞ Unlimited and ⟲ Archive are all
+> playable, with pixel art, synthesised sound, stats, dive buddies,
+> colour-blind mode, a How to Play with a practice dive, and 30 prompts
+> (~2,150 answers). Themed packs come next. The test bench and sprite
+> gallery live at `?lab`.
 
 ## Features
 
 - **Daily Dive**: 7 prompts a day, the same for everyone, new at midnight Sydney time.
+  The only mode that counts towards streaks, stats and buddies.
+- **∞ Unlimited (the Endless Dive)**: numbered random dives, as many as you
+  like. Each number is a fixed seeded deal (shared as `SINKER ∞ #n`), and
+  today's daily prompts are always left out so nothing gets spoiled.
+- **⟲ Archive**: replay any past daily dive. If you played it that day, you
+  get the exact same prompts.
+- One dive at a time: Unlimited and Archive dives can be abandoned from the
+  menu; the daily dive can't.
 - **Sound**: everything is synthesised live with the Web Audio API (no audio
   files). Off by default; toggle with the speaker button or in Settings.
 - **Stats**: games played, average, best, streaks and where your answers landed.
@@ -172,6 +181,6 @@ scripts/
 2. ✅ Playable Daily Dive: full loop, sink animation, results, share, streaks
 3. ✅ Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
    accessibility, How to Play, stats, buddies, 30 prompts
-4. Unlimited & Archive
+4. ✅ Unlimited & Archive
 5. Themed packs
 6. Depth Charge multiplayer (needs a backend; proposal first)

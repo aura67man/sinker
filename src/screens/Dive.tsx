@@ -19,7 +19,7 @@ import { answerTimeLeft, previewLeft, roundPhase, submitAnswer, type PendingSugg
 import { depthForPoints, totalScore, type RoundResult } from '../logic/scoring';
 import { TIERS, TIER_ORDER } from '../logic/tiers';
 import type { Prompt } from '../logic/types';
-import type { ActiveDive } from '../state/save';
+import { diveLabel, type ActiveDive } from '../state/save';
 import { useNow } from '../state/hooks';
 import './dive.css';
 
@@ -76,6 +76,7 @@ export function Dive({
           key={active.rounds.length}
           prompt={prompts[active.rounds.length]}
           roundNumber={active.rounds.length + 1}
+          modeTag={active.mode === 'daily' ? '' : diveLabel(active.mode, active.diveNumber)}
           startedAt={active.roundStartedAt!}
           onResult={onRoundResult}
           buddy={buddy}
@@ -179,13 +180,15 @@ interface RoundProps {
   startedAt: number;
   onResult: (result: RoundResult) => void;
   buddy: SpriteDef | null;
+  /** "∞ #3" or "#1 ⟲" for non-daily dives, so you know which mode you're in. */
+  modeTag: string;
 }
 
 type Feedback = { kind: 'no-echo' | 'suggest'; id: number } | null;
 
 const SHAKE: Keyframe[] = [0, -8, 7, -5, 3, 0].map((x) => ({ transform: `translateX(${x}px)` }));
 
-function RoundView({ prompt, roundNumber, startedAt, onResult, buddy }: RoundProps) {
+function RoundView({ prompt, roundNumber, startedAt, onResult, buddy, modeTag }: RoundProps) {
   const now = useNow();
   const phase = roundPhase(startedAt, now);
   const index = useMemo(() => buildIndex(prompt), [prompt]);
@@ -259,6 +262,7 @@ function RoundView({ prompt, roundNumber, startedAt, onResult, buddy }: RoundPro
       <div className="prompt-card">
         <p className="eyebrow">
           prompt {roundNumber} of {PROMPTS_PER_DIVE}
+          {modeTag && <span className="mode-tag">{modeTag}</span>}
         </p>
         <h1 className="prompt-text">{prompt.prompt}</h1>
         {prompt.qualifiers?.length ? (

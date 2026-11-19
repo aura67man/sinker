@@ -12,7 +12,8 @@ import type { Stats } from '../logic/stats';
 import type { StreakInfo } from '../logic/streak';
 import { TIERS, TIER_ORDER, type Outcome } from '../logic/tiers';
 import type { Answer } from '../logic/types';
-import type { MotionSetting, Settings } from '../state/save';
+import { dateKeyForDive } from '../logic/daily';
+import type { FinishedDive, MotionSetting, Settings } from '../state/save';
 import { PRACTICE_PROMPT } from '../data/practice';
 
 // ── How to play ──────────────────────────────────────────────────────────────
@@ -228,7 +229,16 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
 
 // ── Stats ────────────────────────────────────────────────────────────────────
 
-export function StatsPanel({ stats, streak }: { stats: Stats; streak: StreakInfo }) {
+export function StatsPanel({
+  stats,
+  streak,
+  endless,
+}: {
+  stats: Stats;
+  streak: StreakInfo;
+  endless: readonly FinishedDive[];
+}) {
+  const endlessBest = endless.length ? Math.max(...endless.map((d) => d.total)) : 0;
   const outcomes: Outcome[] = [...TIER_ORDER, 'miss'];
   const max = Math.max(1, ...outcomes.map((o) => stats.distribution[o]));
   return (
@@ -262,6 +272,9 @@ export function StatsPanel({ stats, streak }: { stats: Stats; streak: StreakInfo
         ))}
       </ul>
       <p className="muted small">Daily dives only. Stats live in this browser.</p>
+      <p className="endless-line">
+        ∞ Endless dives: <b>{endless.length}</b> played · best <b>{endlessBest}</b>
+      </p>
     </div>
   );
 }
@@ -301,6 +314,54 @@ export function BuddiesPanel({ bestStreak, selected, onSelect }: BuddiesProps) {
                 <span className="muted small">
                   {unlocked ? b.blurb : `Reach a ${b.unlockStreak}-day streak`}
                 </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+// ── Archive ──────────────────────────────────────────────────────────────────
+
+interface ArchiveProps {
+  /** Today's dive number: the archive lists every dive before it. */
+  today: number;
+  daily: Record<number, FinishedDive>;
+  archive: Record<number, FinishedDive>;
+  onPlay: (diveNumber: number) => void;
+}
+
+const fmtDate = (key: string) =>
+  new Date(`${key}T12:00:00Z`).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+
+export function ArchivePanel({ today, daily, archive, onPlay }: ArchiveProps) {
+  const past = Array.from({ length: Math.max(0, today - 1) }, (_, i) => today - 1 - i);
+  if (past.length === 0) {
+    return <p className="muted">No past dives yet. Today is Dive #{today}: come back tomorrow.</p>;
+  }
+  return (
+    <div className="archive">
+      <p className="muted small">
+        Replay any past daily dive. Replays don't count towards your streak or stats. If you played that day, you get
+        the exact prompts you had.
+      </p>
+      <ul className="archive-list">
+        {past.map((n) => {
+          const played = daily[n];
+          const replayed = archive[n];
+          return (
+            <li key={n}>
+              <button className="archive-row" onClick={() => onPlay(n)}>
+                <span className="archive-num">#{n}</span>
+                <span className="archive-date">{fmtDate(dateKeyForDive(n))}</span>
+                <span className="archive-status">
+                  {played && <span>played {played.total}</span>}
+                  {replayed && <span>replay {replayed.total}</span>}
+                  {!played && !replayed && <span className="muted">not played</span>}
+                </span>
+                <span aria-hidden className="archive-go">▶</span>
               </button>
             </li>
           );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dateKeyAt, dateKeyForDive, dealDive, diveNumberFor, nextMidnight } from './daily';
+import { dateKeyAt, dateKeyForDive, dealDive, dealUnlimited, diveNumberFor, nextMidnight } from './daily';
 import { hashString, rngFromString, seededShuffle } from './random';
 
 const pool = Array.from({ length: 30 }, (_, i) => `prompt-${String(i).padStart(2, '0')}`);
@@ -77,5 +77,24 @@ describe('dealDive', () => {
   });
   it('throws if the pool is too small', () => {
     expect(() => dealDive(['a', 'b'], 1)).toThrow();
+  });
+});
+
+describe('dealUnlimited', () => {
+  it('is fixed per dive number', () => {
+    expect(dealUnlimited(pool, 3)).toEqual(dealUnlimited(pool, 3));
+    expect(dealUnlimited(pool, 3)).not.toEqual(dealUnlimited(pool, 4));
+  });
+  it('deals seven different prompts', () => {
+    expect(new Set(dealUnlimited(pool, 9)).size).toBe(7);
+  });
+  it("never includes today's daily prompts", () => {
+    const daily = dealDive(pool, 5);
+    for (let n = 1; n <= 40; n++) {
+      expect(dealUnlimited(pool, n, daily).some((id) => daily.includes(id))).toBe(false);
+    }
+  });
+  it('falls back to the whole pool if exclusions leave too few', () => {
+    expect(dealUnlimited(pool.slice(0, 8), 1, pool.slice(0, 5))).toHaveLength(7);
   });
 });

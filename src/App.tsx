@@ -1,6 +1,11 @@
 /**
- * Top level: owns the save file, decides which screen is showing, and
- * wires the daily deal, sound and settings to the screens.
+ * Top level: owns the save file, decides which screen is showing, and wires
+ * the three dive modes (daily, unlimited, archive), sound and settings to
+ * the screens.
+ *
+ * Only one dive can be in progress at a time. The daily dive can't be
+ * abandoned (that would let you peek at prompts and restart); Unlimited and
+ * Archive dives can.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buddyById, BUDDIES } from './art/creatures';
@@ -9,27 +14,44 @@ import { DAILY_POOL_IDS, loadPrompts } from './data';
 import { Modal } from './components/Modal';
 import { Ocean } from './components/Ocean';
 import { useToast } from './components/Toast';
-import { dateKeyAt, dealDive, diveNumberFor } from './logic/daily';
+import { dateKeyAt, dateKeyForDive, dealDive, dealUnlimited, diveNumberFor } from './logic/daily';
 import { depthForPoints, type RoundResult } from './logic/scoring';
 import { computeStats, STREAK_MILESTONES } from './logic/stats';
 import { computeStreak } from './logic/streak';
 import type { Prompt } from './logic/types';
 import { Dive } from './screens/Dive';
-import { BuddiesPanel, HowToPlay, SettingsPanel, StatsPanel } from './screens/Panels';
+import { ArchivePanel, BuddiesPanel, HowToPlay, SettingsPanel, StatsPanel } from './screens/Panels';
 import { Results } from './screens/Results';
 import { Title } from './screens/Title';
 import { useNow, useReducedMotion } from './state/hooks';
-import { finishDive, loadSave, writeSave, type ActiveDive, type SaveData } from './state/save';
+import {
+  finishDive,
+  loadSave,
+  recordFinished,
+  writeSave,
+  type DiveMode,
+  type FinishedDive,
+  type SaveData,
+} from './state/save';
 
 type Screen = 'title' | 'dive' | 'results';
-type Panel = 'menu' | 'howto' | 'settings' | 'stats' | 'buddies' | null;
+type Panel = 'menu' | 'howto' | 'settings' | 'stats' | 'buddies' | 'archive' | null;
+/** Which finished dive the results screen shows. null = today's daily. */
+type Viewing = { mode: DiveMode; diveNumber: number } | null;
 
 function initialSave(): SaveData {
   const save = loadSave();
   const today = diveNumberFor(dateKeyAt(Date.now()));
-  // An unfinished dive from an earlier day can't be finished now: drop it.
-  if (save.active && save.active.diveNumber !== today) save.active = null;
+  // An unfinished *daily* dive from an earlier day can't be finished now: drop it.
+  if (save.active?.mode === 'daily' && save.active.diveNumber !== today) save.active = null;
   return save;
+}
+
+function findFinished(save: SaveData, viewing: Viewing, today: number): FinishedDive | undefined {
+  if (!viewing) return save.daily[today];
+  if (viewing.mode === 'unlimited') return save.unlimited.history.find((d) => d.diveNumber === viewing.diveNumber);
+  if (viewing.mode === 'archive') return save.archive[viewing.diveNumber];
+  return save.daily[viewing.diveNumber];
 }
 
 export function App() {
@@ -42,10 +64,11 @@ export function App() {
   }, [dateKey]);
 
   const [screen, setScreen] = useState<Screen>(() => {
-    if (save.daily[today.diveNumber]) return 'results';
     if (save.active) return 'dive';
+    if (save.daily[today.diveNumber]) return 'results';
     return 'title';
   });
+  const [viewing, setViewing] = useState<Viewing>(null);
   const [panel, setPanel] = useState<Panel>(save.seenHowTo ? null : 'howto');
   const [prompts, setPrompts] = useState<Prompt[] | null>(null);
   const [diveDepth, setDiveDepth] = useState(0);
@@ -80,9 +103,9 @@ export function App() {
 
   const update = useCallback((fn: (s: SaveData) => SaveData) => setSave((s) => fn(s)), []);
 
-  // Which prompts the current screen needs.
-  const finished = save.daily[today.diveNumber];
-  const neededIds = screen === 'results' && finished ? finished.promptIds : (save.active?.promptIds ?? today.promptIds);
+  // Which finished dive the results screen is showing, and which prompts we need.
+  const viewed = findFinished(save, viewing, today.diveNumber);
+  const neededIds = screen === 'results' && viewed ? viewed.promptIds : (save.active?.promptIds ?? today.promptIds);
   const neededKey = neededIds.join('|');
   useEffect(() => {
     let live = true;
@@ -93,36 +116,110 @@ export function App() {
     };
   }, [neededKey]);
 
-  // Midnight rollover: results for yesterday give way to the new title screen.
+  // Midnight rollover: results for yesterday's daily give way to the new title screen.
   useEffect(() => {
-    if (screen === 'results' && !save.daily[today.diveNumber]) setScreen('title');
-  }, [screen, save.daily, today.diveNumber]);
+    if (screen === 'results' && !viewed) setScreen('title');
+  }, [screen, viewed]);
 
   const completedNumbers = useMemo(() => Object.keys(save.daily).map(Number), [save.daily]);
   const streak = useMemo(() => computeStreak(completedNumbers, today.diveNumber), [completedNumbers, today.diveNumber]);
   const stats = useMemo(() => computeStats(Object.values(save.daily)), [save.daily]);
   const buddy = buddyById(save.buddy);
-  // A buddy only shows if it's still unlocked (it always is, best streak never drops).
   const buddySprite = streak.best >= buddy.unlockStreak ? buddy.sprite : null;
 
-  // ── Dive actions ──────────────────────────────────────────────────────────
-  const begin = useCallback(async () => {
-    sound.unlock();
-    // Make sure the prompts are downloaded before the clock starts.
-    await loadPrompts(save.active?.promptIds ?? today.promptIds);
-    update((s) => {
-      const active: ActiveDive = s.active ?? {
-        diveNumber: today.diveNumber,
-        dateKey: today.dateKey,
-        promptIds: today.promptIds,
-        rounds: [],
-        roundStartedAt: null,
-      };
-      const startNow = active.roundStartedAt === null && active.rounds.length === 0;
-      return { ...s, active: startNow ? { ...active, roundStartedAt: Date.now() } : active };
-    });
-    setScreen('dive');
-  }, [save.active?.promptIds, today, update]);
+  // ── Starting dives ────────────────────────────────────────────────────────
+
+  /**
+   * One dive at a time. If another dive is already going, resume it instead
+   * (and say why) rather than silently throwing it away.
+   */
+  const blockedByActive = useCallback(
+    (mode: DiveMode): boolean => {
+      const active = save.active;
+      if (!active || active.mode === mode) return false;
+      toast.show(
+        active.mode === 'daily'
+          ? "Finish today's dive first"
+          : `Finish or abandon your ${active.mode === 'unlimited' ? 'endless' : 'archive'} dive first`,
+      );
+      setPanel(null);
+      setScreen('dive');
+      return true;
+    },
+    [save.active, toast],
+  );
+
+  const startDive = useCallback(
+    async (mode: DiveMode, diveNumber: number, promptIds: string[], diveDateKey: string) => {
+      sound.unlock();
+      // Make sure the prompts are downloaded before the clock starts.
+      await loadPrompts(promptIds);
+      update((s) => ({
+        ...s,
+        active: { mode, diveNumber, dateKey: diveDateKey, promptIds, rounds: [], roundStartedAt: Date.now() },
+        unlimited: mode === 'unlimited' ? { ...s.unlimited, next: diveNumber + 1 } : s.unlimited,
+      }));
+      setPanel(null);
+      setScreen('dive');
+      window.scrollTo(0, 0);
+    },
+    [update],
+  );
+
+  const beginDaily = useCallback(async () => {
+    if (blockedByActive('daily')) return;
+    if (save.active) {
+      // Resuming today's dive.
+      setScreen('dive');
+      return;
+    }
+    if (save.daily[today.diveNumber]) {
+      setViewing(null);
+      setScreen('results');
+      return;
+    }
+    await startDive('daily', today.diveNumber, today.promptIds, today.dateKey);
+  }, [blockedByActive, save.active, save.daily, today, startDive]);
+
+  const beginUnlimited = useCallback(async () => {
+    if (blockedByActive('unlimited')) return;
+    if (save.active) {
+      setPanel(null);
+      setScreen('dive');
+      return;
+    }
+    const n = save.unlimited.next;
+    await startDive('unlimited', n, dealUnlimited(DAILY_POOL_IDS, n, today.promptIds), today.dateKey);
+  }, [blockedByActive, save.active, save.unlimited.next, today, startDive]);
+
+  const openArchive = useCallback(() => {
+    if (blockedByActive('archive')) return;
+    if (save.active) {
+      setPanel(null);
+      setScreen('dive');
+      return;
+    }
+    setPanel('archive');
+  }, [blockedByActive, save.active]);
+
+  const playArchive = useCallback(
+    async (n: number) => {
+      // Use the prompts you actually had that day, if you played it.
+      const ids = save.daily[n]?.promptIds ?? dealDive(DAILY_POOL_IDS, n);
+      await startDive('archive', n, ids, dateKeyForDive(n));
+    },
+    [save.daily, startDive],
+  );
+
+  const abandon = useCallback(() => {
+    update((s) => (s.active && s.active.mode !== 'daily' ? { ...s, active: null } : s));
+    setPanel(null);
+    setViewing(null);
+    setScreen(save.daily[today.diveNumber] ? 'results' : 'title');
+    toast.show('Dive abandoned');
+  }, [update, save.daily, today.diveNumber, toast]);
+
+  // ── During a dive ─────────────────────────────────────────────────────────
 
   const onRoundResult = useCallback(
     (result: RoundResult) =>
@@ -140,16 +237,17 @@ export function App() {
   const onFinish = useCallback(() => {
     if (!save.active) return;
     const done = finishDive(save.active, Date.now());
-    const daily = { ...save.daily, [done.diveNumber]: done };
-    const before = computeStreak(Object.keys(save.daily).map(Number), done.diveNumber);
-    const after = computeStreak(Object.keys(daily).map(Number), done.diveNumber);
-
-    update((s) => ({ ...s, active: null, daily }));
+    update((s) => recordFinished(s, done));
+    setViewing(done.mode === 'daily' ? null : { mode: done.mode, diveNumber: done.diveNumber });
     setScreen('results');
     window.scrollTo(0, 0);
     sound.fanfare();
 
-    // Celebrate streak milestones and newly unlocked buddies.
+    // Streaks and buddies only move with the daily dive.
+    if (done.mode !== 'daily') return;
+    const daily = { ...save.daily, [done.diveNumber]: done };
+    const before = computeStreak(Object.keys(save.daily).map(Number), done.diveNumber);
+    const after = computeStreak(Object.keys(daily).map(Number), done.diveNumber);
     const unlocked = BUDDIES.find((b) => b.unlockStreak > before.best && b.unlockStreak <= after.best);
     if (unlocked) toast.show(`New dive buddy: ${unlocked.name}!`);
     else if ((STREAK_MILESTONES as readonly number[]).includes(after.current)) {
@@ -158,9 +256,10 @@ export function App() {
   }, [save.active, save.daily, update, toast]);
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const oceanDepth =
-    screen === 'dive' ? diveDepth : screen === 'results' && finished ? depthForPoints(finished.total) : 0;
+  const oceanDepth = screen === 'dive' ? diveDepth : screen === 'results' && viewed ? depthForPoints(viewed.total) : 0;
   useEffect(() => sound.setDepth(oceanDepth), [oceanDepth]);
+
+  const canAbandon = screen === 'dive' && save.active && save.active.mode !== 'daily';
 
   return (
     <>
@@ -182,8 +281,10 @@ export function App() {
         <Title
           diveNumber={today.diveNumber}
           streak={streak.current}
-          resuming={!!save.active}
-          onBegin={begin}
+          resuming={save.active?.mode === 'daily'}
+          onBegin={beginDaily}
+          onUnlimited={beginUnlimited}
+          onArchive={openArchive}
           buddy={buddySprite}
         />
       )}
@@ -202,14 +303,34 @@ export function App() {
         />
       )}
 
-      {screen === 'results' && finished && (
-        <Results dive={finished} prompts={prompts} streak={streak} onToast={toast.show} buddy={buddySprite} />
+      {screen === 'results' && viewed && (
+        <Results
+          dive={viewed}
+          prompts={prompts}
+          streak={streak}
+          onToast={toast.show}
+          buddy={buddySprite}
+          onUnlimited={beginUnlimited}
+          onArchive={openArchive}
+        />
       )}
 
       <Modal open={panel === 'menu'} title="Menu" onClose={() => setPanel(null)}>
         <nav className="menu-grid">
-          <button className="btn" onClick={() => setPanel('howto')}>
-            ? How to play
+          <button
+            className="btn"
+            onClick={() => {
+              setPanel(null);
+              void beginDaily();
+            }}
+          >
+            ▼ Daily dive
+          </button>
+          <button className="btn" onClick={beginUnlimited}>
+            ∞ Unlimited
+          </button>
+          <button className="btn" onClick={openArchive}>
+            ⟲ Archive
           </button>
           <button className="btn" onClick={() => setPanel('stats')}>
             ▤ Stats
@@ -217,11 +338,18 @@ export function App() {
           <button className="btn" onClick={() => setPanel('buddies')}>
             ◉ Buddies
           </button>
+          <button className="btn" onClick={() => setPanel('howto')}>
+            ? How to play
+          </button>
           <button className="btn" onClick={() => setPanel('settings')}>
             ⚙ Settings
           </button>
         </nav>
-        <p className="muted small">Unlimited and Archive dives are on the way.</p>
+        {canAbandon && (
+          <button className="btn btn-abandon" onClick={abandon}>
+            Abandon this {save.active?.mode === 'unlimited' ? 'endless' : 'archive'} dive
+          </button>
+        )}
       </Modal>
 
       <Modal
@@ -240,7 +368,7 @@ export function App() {
       </Modal>
 
       <Modal open={panel === 'stats'} title="Stats" onClose={() => setPanel(null)}>
-        <StatsPanel stats={stats} streak={streak} />
+        <StatsPanel stats={stats} streak={streak} endless={save.unlimited.history} />
       </Modal>
 
       <Modal open={panel === 'buddies'} title="Dive buddies" onClose={() => setPanel(null)}>
@@ -249,6 +377,10 @@ export function App() {
           selected={save.buddy}
           onSelect={(id) => update((s) => ({ ...s, buddy: id }))}
         />
+      </Modal>
+
+      <Modal open={panel === 'archive'} title="Archive" onClose={() => setPanel(null)}>
+        <ArchivePanel today={today.diveNumber} daily={save.daily} archive={save.archive} onPlay={playArchive} />
       </Modal>
 
       {toast.element}

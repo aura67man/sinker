@@ -162,3 +162,15 @@
   max-width: 340px;
   margin: 6px 0 0;
 }
+
+.title-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(420px, 100%);
+  margin-top: 14px;
+}
+
+.title-modes .btn {
+  font-size: 0.8rem;
+}
