@@ -73,6 +73,10 @@ class SoundEngine {
         this.echo.connect(wet).connect(feedback).connect(this.echo);
         wet.connect(this.master);
       }
+      // iPhones mute Web Audio when the ring/silent switch is on silent.
+      // 'playback' tells Safari (16.4+) this is media the player chose to hear.
+      const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+      if (session && session.type !== 'playback') session.type = 'playback';
       if (this.ctx.state === 'suspended') void this.ctx.resume();
       CLIPS.forEach((c) => void this.load(c));
       this.syncAmbient();
