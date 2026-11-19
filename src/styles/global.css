@@ -255,6 +255,7 @@ fieldset.setting {
 
 .setting input[type='checkbox'],
 .radio input {
+  flex: none;
   width: 22px;
   height: 22px;
   accent-color: var(--teal);
