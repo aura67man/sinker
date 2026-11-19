@@ -1,40 +1,39 @@
-import { LANDMARKS } from '../logic/landmarks';
+import { OCEAN, type Theme } from '../logic/theme';
 
 interface Props {
-  /** Current depth in metres. The ruler scrolls so this sits at the YOU marker. */
-  depth: number;
+  /** Current distance in the theme's units (metres of depth, or yards). */
+  distance: number;
   animate: boolean;
+  theme?: Theme;
 }
 
-/** px per metre on the ruler. 100 m = 24 px. */
-const PX_PER_M = 0.24;
-const MAX_DEPTH = 7500;
-const TICKS = Array.from({ length: MAX_DEPTH / 100 + 1 }, (_, i) => i * 100);
-
 /**
- * The vertical depth ruler on the right edge. Landmarks appear once you've
- * passed them. Text labels only show on wider screens; phones get the dots.
+ * The vertical ruler on the right edge. Landmarks appear once you've passed
+ * them. Text labels only show on wider screens; phones get the dots.
  */
-export function DepthScale({ depth, animate }: Props) {
+export function DepthScale({ distance, animate, theme = OCEAN }: Props) {
+  const { pxPerUnit, minor, major, max } = theme.ruler;
+  const ticks = Array.from({ length: max / minor + 1 }, (_, i) => i * minor);
+  const sign = theme.negative ? '-' : '';
   return (
-    <div className="depth-scale" aria-hidden>
+    <div className={`depth-scale theme-${theme.id}`} aria-hidden>
       <div
         className="depth-ruler"
         style={{
-          transform: `translateY(${-depth * PX_PER_M}px)`,
+          transform: `translateY(${-distance * pxPerUnit}px)`,
           transition: animate ? 'transform 1.4s cubic-bezier(.25,.8,.3,1)' : 'none',
         }}
       >
-        {TICKS.map((m) => (
-          <div key={m} className={`tick ${m % 500 === 0 ? 'major' : ''}`} style={{ top: m * PX_PER_M }}>
-            {m % 500 === 0 && <span>{m === 0 ? '0' : `-${m.toLocaleString('en-AU')}`}</span>}
+        {ticks.map((m) => (
+          <div key={m} className={`tick ${m % major === 0 ? 'major' : ''}`} style={{ top: m * pxPerUnit }}>
+            {m % major === 0 && <span>{m === 0 ? '0' : `${sign}${m.toLocaleString('en-AU')}`}</span>}
           </div>
         ))}
-        {LANDMARKS.map((l) => (
+        {theme.landmarks.map((l) => (
           <div
             key={l.depth}
-            className={`landmark ${depth >= l.depth ? 'passed' : ''}`}
-            style={{ top: l.depth * PX_PER_M }}
+            className={`landmark ${distance >= l.depth ? 'passed' : ''}`}
+            style={{ top: l.depth * pxPerUnit }}
           >
             <span className="landmark-label">{l.label}</span>
           </div>

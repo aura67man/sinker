@@ -7,11 +7,11 @@ and the deeper Bathy, a tiny pixel bathysphere, sinks.
 Personal project, all original name, art and copy. Built with Vite + React +
 TypeScript, fully client-side.
 
-> **Status: Phase 4.** Daily Dive, ∞ Unlimited and ⟲ Archive are all
-> playable, with pixel art, synthesised sound, stats, dive buddies,
-> colour-blind mode, a How to Play with a practice dive, and 30 prompts
-> (~2,150 answers). Themed packs come next. The test bench and sprite
-> gallery live at `?lab`.
+> **Status: Phase 5.** Daily Dive, ∞ Unlimited, ⟲ Archive and ▦ Themed
+> Packs are all playable, with pixel art, synthesised sound, stats, dive
+> buddies, colour-blind mode and a How to Play with a practice dive.
+> Content: 30 daily prompts plus 4 packs × 1 chapter (62 prompts, ~3,400
+> answers). The test bench and sprite gallery live at `?lab`.
 
 ## Features
 
@@ -22,8 +22,11 @@ TypeScript, fully client-side.
   today's daily prompts are always left out so nothing gets spoiled.
 - **⟲ Archive**: replay any past daily dive. If you played it that day, you
   get the exact same prompts.
-- One dive at a time: Unlimited and Archive dives can be abandoned from the
-  menu; the daily dive can't.
+- **▦ Themed packs**: Words & Language, At the Movies, Sports and Geography.
+  Each pack is a list of seven-prompt chapters that unlock in order. The
+  Sports pack plays on a football field: 1 point = 1 yard instead of 10 m.
+- One dive at a time: Unlimited, Archive and pack dives can be abandoned from
+  the menu; the daily dive can't.
 - **Sound**: everything is synthesised live with the Web Audio API (no audio
   files). Off by default; toggle with the speaker button or in Settings.
 - **Stats**: games played, average, best, streaks and where your answers landed.
@@ -65,6 +68,22 @@ Progress is saved to `localStorage` as you play: each round's result, plus the
 moment the current round started. Reloading mid-round drops you back in with
 the clock still running (it never pauses or resets), and a finished day opens
 straight to its results. Clearing site data wipes your history and streak.
+
+## Adding pack chapters (or whole packs)
+
+Each pack lives in `src/data/packs/<pack-id>/`:
+
+- `pack.json`: title, short name, blurb, theme (`"ocean"` or `"pitch"`) and
+  the chapter list. A chapter is `{ "title": "...", "promptIds": [7 ids] }`.
+  A chapter with `"promptIds": []` shows as "coming soon".
+- One JSON file per prompt, same format as the daily prompts. Pack prompts are
+  never dealt into daily, Unlimited or Archive dives.
+
+To add Chapter 2, drop seven prompt files into the pack's folder and list
+their ids in that chapter. `npm run validate` checks every manifest: seven
+prompts per playable chapter, every id has a file, no prompt used twice, and
+prompt ids unique across the whole project. A new pack folder also needs its
+id added to `PACK_ORDER` in `src/data/index.ts`.
 
 ## Editing pixel art
 
@@ -182,5 +201,5 @@ scripts/
 3. ✅ Art, sound & polish: pixel art, Bathy, depth landmarks, audio, settings,
    accessibility, How to Play, stats, buddies, 30 prompts
 4. ✅ Unlimited & Archive
-5. Themed packs
+5. ✅ Themed packs (Chapter 1 of each; more chapters in content batches)
 6. Depth Charge multiplayer (needs a backend; proposal first)

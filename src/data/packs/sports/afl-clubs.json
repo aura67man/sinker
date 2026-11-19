@@ -1,0 +1,30 @@
+{
+  "id": "afl-clubs",
+  "prompt": "Name an AFL club",
+  "category": "sport",
+  "qualifiers": ["past or present", "old VFL clubs count"],
+  "answers": [
+    {"name": "Collingwood", "aliases": ["magpies", "pies"], "tier": "shallows", "fact": "The most-supported club in the AFL."},
+    {"name": "Richmond", "aliases": ["tigers"], "tier": "shallows", "fact": "Ended a 37-year premiership drought in 2017."},
+    {"name": "Essendon", "aliases": ["bombers"], "tier": "shallows", "fact": "Nicknamed 'the Bombers' after the nearby airport."},
+    {"name": "Carlton", "aliases": ["blues"], "tier": "shallows", "fact": "Founded in 1864, one of the oldest clubs."},
+    {"name": "Hawthorn", "aliases": ["hawks"], "tier": "shallows", "fact": "Won three flags in a row, 2013 to 2015."},
+    {"name": "Sydney Swans", "aliases": ["swans", "sydney"], "tier": "shallows", "fact": "Moved up from South Melbourne in 1982."},
+    {"name": "Geelong", "aliases": ["geelong cats", "cats"], "tier": "shallows", "fact": "Founded in 1859."},
+    {"name": "Fitzroy", "tier": "red-herring", "fact": "Merged with the Brisbane Bears in 1996 to form the Brisbane Lions."},
+    {"name": "Adelaide Crows", "aliases": ["adelaide", "crows"], "tier": "shoal", "fact": "Joined in 1991 and won back-to-back flags in 1997 and 1998."},
+    {"name": "Brisbane Lions", "aliases": ["brisbane", "lions"], "tier": "shoal", "fact": "Won three flags in a row, 2001 to 2003."},
+    {"name": "West Coast Eagles", "aliases": ["west coast", "eagles"], "tier": "shoal", "fact": "The first non-Victorian club to win a flag, in 1992."},
+    {"name": "Western Bulldogs", "aliases": ["bulldogs", "footscray", "doggies"], "tier": "shoal", "fact": "Broke a 62-year premiership drought in 2016."},
+    {"name": "Melbourne", "aliases": ["demons", "dees", "melbourne demons"], "tier": "shoal", "fact": "Founded in 1858, one of the oldest football clubs in the world."},
+    {"name": "St Kilda", "aliases": ["saints"], "tier": "shoal", "fact": "Have won just one premiership, in 1966."},
+    {"name": "North Melbourne", "aliases": ["kangaroos", "north", "roos"], "tier": "shoal", "fact": "Played as 'the Kangaroos' from 1999 to 2007."},
+    {"name": "Port Adelaide", "aliases": ["power", "port"], "tier": "shoal", "fact": "Won the 2004 premiership."},
+    {"name": "Fremantle", "aliases": ["dockers", "freo"], "tier": "shoal", "fact": "Joined the league in 1995."},
+    {"name": "Gold Coast Suns", "aliases": ["suns", "gold coast"], "tier": "twilight", "fact": "Joined in 2011."},
+    {"name": "GWS Giants", "aliases": ["giants", "gws", "greater western sydney"], "tier": "twilight", "fact": "Joined in 2012, based in Sydney's west."},
+    {"name": "South Melbourne", "tier": "abyssal", "fact": "Became the Sydney Swans in 1982."},
+    {"name": "Brisbane Bears", "aliases": ["bears"], "tier": "abyssal", "fact": "Played from 1987 until merging with Fitzroy in 1996."},
+    {"name": "University", "aliases": ["university blacks"], "tier": "gem", "fact": "A VFL club of university students, from 1908 to 1914."}
+  ]
+}

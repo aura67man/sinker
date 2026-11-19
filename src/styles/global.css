@@ -5,7 +5,7 @@
   --panel-solid: #0a1527;
   --line: #22385a;
   --text: #e4ecf4;
-  --muted: #8ea2b9;
+  --muted: #a7b7c9;
   --teal: #4fd1c5;
   --amber: #f5a524;
   --amber-dark: #3a2400;
@@ -35,10 +35,19 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: var(--bg);
   color: var(--text);
   font: 16px/1.5 var(--body);
   -webkit-text-size-adjust: 100%;
+}
+
+/* Only the root gets the fallback colour. If <body> had a background too, it
+   would paint over the fixed ocean / pitch layer that sits behind the page. */
+html {
+  background: var(--bg);
+}
+
+body {
+  background: transparent;
 }
 
 body {
@@ -656,5 +665,94 @@ input[type='range'] {
 }
 
 .archive-go {
+  color: var(--teal);
+}
+
+/* ── Packs ──────────────────────────────────────────────────────────────── */
+.pack-list,
+.chapter-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pack-card {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--line);
+  border-left: 6px solid var(--teal);
+  background: rgba(3, 8, 16, 0.6);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pack-card.theme-pitch {
+  border-left-color: #3fae5a;
+}
+
+.pack-card:hover {
+  border-color: var(--teal);
+}
+
+.pack-title,
+.pack-heading {
+  font: 700 1rem var(--pixel);
+  letter-spacing: 0.06em;
+  color: var(--amber);
+}
+
+.pack-heading {
+  margin: 8px 0 2px;
+}
+
+.pack-progress {
+  font: 400 0.6rem var(--pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.pack-back {
+  font-size: 0.9rem;
+}
+
+.chapter-row {
+  display: grid;
+  grid-template-columns: 2em 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  background: rgba(3, 8, 16, 0.6);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.chapter-row:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.chapter-row.status-open {
+  border-color: var(--teal);
+}
+
+.chapter-num {
+  font: 700 0.9rem var(--pixel);
+  color: var(--amber);
+}
+
+.chapter-status {
+  font: 400 0.6rem var(--pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--teal);
 }

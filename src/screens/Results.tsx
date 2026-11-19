@@ -6,16 +6,16 @@ import { TierIcon } from '../components/TierIcon';
 import { PROMPTS_PER_DIVE } from '../config';
 import { nextMidnight } from '../logic/daily';
 import { estimatedPercentile } from '../logic/percentile';
-import { depthForPoints, verdictFor } from '../logic/scoring';
+import { verdictFor } from '../logic/scoring';
+import { formatDistance, OCEAN, type Theme } from '../logic/theme';
 import { buildShareText } from '../logic/share';
 import type { StreakInfo } from '../logic/streak';
 import { TIERS, TIER_ORDER } from '../logic/tiers';
 import type { Prompt } from '../logic/types';
-import { diveLabel, type FinishedDive } from '../state/save';
+import type { FinishedDive } from '../state/save';
 import { useNow } from '../state/hooks';
 import './results.css';
 
-const fmt = (n: number) => n.toLocaleString('en-AU');
 const pad = (n: number) => String(n).padStart(2, '0');
 function countdown(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -46,16 +46,19 @@ interface Props {
   streak: StreakInfo;
   onToast: (text: string) => void;
   buddy: SpriteDef | null;
-  onUnlimited: () => void;
-  onArchive: () => void;
+  /** Share label: "#42", "∞ #7", "Words 1"... */
+  label: string;
+  /** Header line, e.g. "endless dive ∞ #7 complete". */
+  heading: string;
+  theme?: Theme;
+  /** Buttons under "keep diving". */
+  actions: { label: string; onClick: () => void; primary?: boolean }[];
 }
 
-export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, onArchive }: Props) {
-  const label = diveLabel(dive.mode, dive.diveNumber);
+export function Results({ dive, prompts, streak, onToast, buddy, label, heading, theme = OCEAN, actions }: Props) {
   const isDaily = dive.mode === 'daily';
   const now = useNow(1000);
   const verdict = verdictFor(dive.total);
-  const depth = depthForPoints(dive.total);
   const percentile = estimatedPercentile.percentileFor(dive.total) as number;
   const [copied, setCopied] = useState(false);
 
@@ -66,7 +69,7 @@ export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, on
   }, [copied]);
 
   async function share() {
-    const text = buildShareText(label, dive.rounds);
+    const text = buildShareText(label, dive.rounds, theme);
     if (await copyText(text)) {
       setCopied(true);
       onToast('copied!');
@@ -79,16 +82,17 @@ export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, on
     <main className="results">
       <header className="results-head">
         <span className="results-brand">SINKER</span>
-        <span className="muted">
-          {dive.mode === 'unlimited' ? 'endless dive' : dive.mode === 'archive' ? 'archive dive' : 'dive'} {label} complete
-        </span>
+        <span className="muted">{heading}</span>
       </header>
 
       <section className="results-hero">
         <BathyCrew buddy={buddy} scale={3} className="results-bathy" />
         <div>
           <p className="results-score">{dive.total}</p>
-          <p className="results-depth">-{fmt(depth)} m</p>
+          <p className="results-depth">
+            {theme.negative ? '-' : '+'}
+            {formatDistance(dive.total, theme)}
+          </p>
         </div>
       </section>
 
@@ -126,19 +130,19 @@ export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, on
         </section>
       ) : (
         <p className="muted small mode-note">
-          {dive.mode === 'unlimited' ? 'Endless' : 'Archive'} dives don't count towards your streak or stats.
+          {dive.mode === 'unlimited' ? 'Endless' : dive.mode === 'archive' ? 'Archive' : 'Pack'} dives don't count
+          towards your streak or stats.
         </p>
       )}
 
       <section className="more-dives">
         <h2 className="section-title">keep diving</h2>
         <div className="more-dives-row">
-          <button className={`btn ${dive.mode === 'unlimited' ? 'btn-primary' : ''}`} onClick={onUnlimited}>
-            ∞ {dive.mode === 'unlimited' ? 'Dive again' : 'Unlimited'}
-          </button>
-          <button className={`btn ${dive.mode === 'archive' ? 'btn-primary' : ''}`} onClick={onArchive}>
-            ⟲ Archive
-          </button>
+          {actions.map((a) => (
+            <button key={a.label} className={`btn ${a.primary ? 'btn-primary' : ''}`} onClick={a.onClick}>
+              {a.label}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -171,10 +175,12 @@ export function Results({ dive, prompts, streak, onToast, buddy, onUnlimited, on
         {dive.rounds.length < PROMPTS_PER_DIVE && <p className="muted">This dive wasn't finished.</p>}
       </section>
 
-      <section className="descent-section">
-        <h2 className="section-title">your descent</h2>
-        <Descent rounds={dive.rounds} buddy={buddy} />
-      </section>
+      {theme.id === 'ocean' && (
+        <section className="descent-section">
+          <h2 className="section-title">your descent</h2>
+          <Descent rounds={dive.rounds} buddy={buddy} />
+        </section>
+      )}
 
       <section className="bearing">
         <h2 className="section-title">the bearing</h2>

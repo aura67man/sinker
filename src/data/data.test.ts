@@ -4,11 +4,11 @@
  * Also spot-checks matching against real answers.
  */
 import { describe, expect, it } from 'vitest';
-import { validatePrompt } from '../logic/validate';
+import { validatePack, validatePrompt } from '../logic/validate';
 import { matchInPrompt } from '../logic/match';
 import { dealDive } from '../logic/daily';
 import type { Prompt } from '../logic/types';
-import { DAILY_POOL_IDS } from './index';
+import { DAILY_POOL_IDS, PACKS } from './index';
 
 const files = import.meta.glob<Prompt>('./prompts/*.json', { eager: true, import: 'default' });
 const prompts = Object.entries(files).map(([path, prompt]) => ({
@@ -56,5 +56,40 @@ describe('matching against real data', () => {
   it('respects qualifiers by simply not listing wrong answers', () => {
     // -burgh is not -burg.
     expect(matchInPrompt('Edinburgh', byId('ville-or-burg')).kind).not.toBe('exact');
+  });
+});
+
+describe('themed packs', () => {
+  const packPrompts = import.meta.glob<Prompt>(['./packs/*/*.json', '!./packs/*/pack.json'], {
+    eager: true,
+    import: 'default',
+  });
+  const manifests = import.meta.glob<unknown>('./packs/*/pack.json', { eager: true, import: 'default' });
+  const packEntries = Object.entries(packPrompts).map(([path, prompt]) => ({
+    folder: path.split('/')[2],
+    id: path.replace(/^.*\/([^/]+)\.json$/, '$1'),
+    prompt,
+  }));
+
+  it('has the four launch packs', () => {
+    expect(PACKS.map((p) => p.id)).toEqual(['words', 'movies', 'sports', 'geography']);
+  });
+
+  it.each(packEntries.map((p) => [p.id, p.prompt] as const))('pack prompt %s passes validation', (id, prompt) => {
+    expect(validatePrompt(prompt, id).errors).toEqual([]);
+  });
+
+  it.each(Object.entries(manifests))('%s is a valid manifest', (path, manifest) => {
+    const folder = path.split('/')[2];
+    const ids = packEntries.filter((p) => p.folder === folder).map((p) => p.id);
+    expect(validatePack(manifest, folder, ids).errors).toEqual([]);
+  });
+
+  it('never shares a prompt id with the daily pool', () => {
+    for (const { id } of packEntries) expect(DAILY_POOL_IDS).not.toContain(id);
+  });
+
+  it('every pack has a playable first chapter', () => {
+    for (const pack of PACKS) expect(pack.chapters[0].promptIds).toHaveLength(7);
   });
 });

@@ -12,10 +12,11 @@ interface Props {
   onBegin: () => void;
   onUnlimited: () => void;
   onArchive: () => void;
+  onPacks: () => void;
   buddy: SpriteDef | null;
 }
 
-export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onArchive, buddy }: Props) {
+export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onArchive, onPacks, buddy }: Props) {
   return (
     <main className="title-screen">
       <div className="sky" aria-hidden>
@@ -49,6 +50,9 @@ export function Title({ diveNumber, streak, resuming, onBegin, onUnlimited, onAr
           </button>
           <button className="btn" onClick={onArchive}>
             ⟲ Archive
+          </button>
+          <button className="btn" onClick={onPacks}>
+            ▦ Packs
           </button>
         </div>
         <p className="muted small">

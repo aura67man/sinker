@@ -6,6 +6,16 @@
   transition: background-color 1.4s ease-out;
 }
 
+/* A steady dark tint over the water so text stays readable near the
+   bright surface; the colour change with depth still shows through. */
+.ocean::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 16, 0.45);
+  pointer-events: none;
+}
+
 /* Faint god-rays near the surface. */
 .ocean-light {
   position: absolute;
@@ -61,4 +71,21 @@
     opacity: 0.5;
     transform: translateX(-50%) scale(1.15);
   }
+}
+
+/* ── Sports pack: a football field ─────────────────────────────────────── */
+.pitch {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(to bottom, #1d5c2e 0 64px, #18512a 64px 128px);
+}
+
+/* Yard lines every stripe, faint so text stays readable. */
+.pitch-lines {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 64px),
+    linear-gradient(to bottom, rgba(5, 10, 20, 0.35), rgba(5, 10, 20, 0.55));
 }

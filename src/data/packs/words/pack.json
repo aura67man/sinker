@@ -1,0 +1,15 @@
+{
+  "id": "words",
+  "title": "Words & Language",
+  "short": "Words",
+  "blurb": "Palindromes, loanwords, collective nouns and more. For word nerds.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Word Play",
+      "promptIds": ["palindromes", "japanese-loanwords", "collective-nouns", "european-languages", "greek-letters", "portmanteaus", "shakespeare-plays"]
+    },
+    { "title": "Lost in Translation", "promptIds": [] },
+    { "title": "Spelling Bee", "promptIds": [] }
+  ]
+}

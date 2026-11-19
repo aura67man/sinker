@@ -1,0 +1,33 @@
+{
+  "id": "ghibli-films",
+  "prompt": "Name a Studio Ghibli film",
+  "category": "screen",
+  "qualifiers": ["Nausicaä counts"],
+  "answers": [
+    {"name": "Spirited Away", "tier": "shallows", "fact": "Won the Oscar for Best Animated Feature in 2003."},
+    {"name": "My Neighbor Totoro", "aliases": ["totoro", "my neighbour totoro"], "tier": "shallows", "fact": "Totoro is Studio Ghibli's logo."},
+    {"name": "Howl's Moving Castle", "aliases": ["howls moving castle"], "tier": "shallows", "fact": "Based on a novel by British author Diana Wynne Jones."},
+    {"name": "Princess Mononoke", "aliases": ["mononoke"], "tier": "shallows", "fact": "Neil Gaiman wrote its English script."},
+    {"name": "Kiki's Delivery Service", "aliases": ["kikis delivery service"], "tier": "shallows", "fact": "Kiki's cat, Jiji, was voiced by Phil Hartman in the first English dub."},
+    {"name": "Ponyo", "tier": "shallows", "fact": "A goldfish girl who wants to be human."},
+    {"name": "Grave of the Fireflies", "tier": "red-herring", "fact": "Released as a double bill with Totoro in 1988."},
+    {"name": "Castle in the Sky", "aliases": ["laputa", "laputa castle in the sky"], "tier": "shoal", "fact": "The first official Studio Ghibli film, from 1986."},
+    {"name": "Nausicaä of the Valley of the Wind", "aliases": ["nausicaa", "nausicaa of the valley of the wind"], "tier": "shoal", "fact": "Made before Ghibli existed; its success led to the studio."},
+    {"name": "The Wind Rises", "aliases": ["wind rises"], "tier": "shoal", "fact": "About the designer of the Zero fighter plane."},
+    {"name": "Arrietty", "aliases": ["the secret world of arrietty"], "tier": "shoal", "fact": "Based on Mary Norton's The Borrowers."},
+    {"name": "The Boy and the Heron", "aliases": ["boy and the heron"], "tier": "shoal", "fact": "Won the Oscar for Best Animated Feature in 2024."},
+    {"name": "Whisper of the Heart", "tier": "shoal", "fact": "Features the song 'Country Roads'."},
+    {"name": "The Cat Returns", "aliases": ["cat returns"], "tier": "shoal", "fact": "A spin-off starring the Baron from Whisper of the Heart."},
+    {"name": "The Tale of the Princess Kaguya", "aliases": ["princess kaguya", "tale of the princess kaguya"], "tier": "shoal", "fact": "Based on Japan's oldest known folk tale."},
+    {"name": "When Marnie Was There", "tier": "shoal", "fact": "Based on an English novel set in Norfolk."},
+    {"name": "From Up on Poppy Hill", "tier": "shoal", "fact": "Set in 1963 Yokohama."},
+    {"name": "Pom Poko", "tier": "shoal", "fact": "Shape-shifting raccoon dogs fight a housing development."},
+    {"name": "Tales from Earthsea", "tier": "shoal", "fact": "Based on Ursula K. Le Guin's books, directed by Goro Miyazaki."},
+    {"name": "Only Yesterday", "tier": "twilight", "fact": "A woman remembers her childhood on a trip to the countryside."},
+    {"name": "Earwig and the Witch", "tier": "twilight", "fact": "Ghibli's first fully 3D computer-animated film."},
+    {"name": "The Red Turtle", "aliases": ["red turtle"], "tier": "twilight", "fact": "A dialogue-free co-production with a Dutch director."},
+    {"name": "My Neighbors the Yamadas", "aliases": ["my neighbours the yamadas"], "tier": "twilight", "fact": "Drawn in a watercolour comic-strip style."},
+    {"name": "Ocean Waves", "tier": "abyssal", "fact": "A 1993 TV film made by Ghibli's younger staff."},
+    {"name": "Porco Rosso", "tier": "gem", "fact": "A WWI flying ace cursed to look like a pig."}
+  ]
+}
