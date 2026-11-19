@@ -20,7 +20,7 @@ const idFromPath = (path: string) => path.replace(/^.*\/([^/]+)\.json$/, '$1');
 export const DAILY_POOL_IDS: readonly string[] = Object.keys(dailyLoaders).map(idFromPath).sort();
 
 /** All themed packs, in display order. */
-const PACK_ORDER = ['words', 'movies', 'sports', 'geography'];
+const PACK_ORDER = ['words', 'movies', 'sports', 'geography', 'music', 'history', 'science', 'screen', 'food', 'australia'];
 export const PACKS: readonly Pack[] = Object.values(packManifests).sort(
   (a, b) => PACK_ORDER.indexOf(a.id) - PACK_ORDER.indexOf(b.id),
 );
