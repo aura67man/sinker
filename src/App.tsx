@@ -96,7 +96,8 @@ export function App() {
   useEffect(() => {
     document.documentElement.dataset.motion = reduced ? 'reduced' : 'full';
     document.documentElement.dataset.colourblind = settings.colourblind ? 'on' : 'off';
-  }, [reduced, settings.colourblind]);
+    document.documentElement.dataset.palette = settings.palette;
+  }, [reduced, settings.colourblind, settings.palette]);
 
   // Keep the sound engine in step with settings. Browsers need a user
   // gesture before audio can start, so unlock on every tap.

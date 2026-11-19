@@ -16,6 +16,7 @@ import { dateKeyForDive } from '../logic/daily';
 import { chapterKey, chapterStatus, isPlayable, type Pack } from '../logic/packs';
 import type { FinishedDive, MotionSetting, Settings } from '../state/save';
 import { PRACTICE_PROMPT } from '../data/practice';
+import { PALETTES } from '../state/palettes';
 
 // ── How to play ──────────────────────────────────────────────────────────────
 
@@ -144,6 +145,31 @@ export function SettingsPanel({ settings, onChange }: SettingsProps) {
   const set = (patch: Partial<Settings>) => onChange({ ...settings, ...patch });
   return (
     <div className="settings">
+      <fieldset className="setting palette-setting">
+        <legend>
+          <b>Colours</b>
+        </legend>
+        <div className="palette-grid" role="radiogroup" aria-label="Colour scheme">
+          {PALETTES.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              role="radio"
+              aria-checked={settings.palette === p.id}
+              className={`palette-option${settings.palette === p.id ? ' selected' : ''}`}
+              onClick={() => set({ palette: p.id })}
+            >
+              <span className="palette-swatch" aria-hidden="true">
+                {p.swatch.map((c) => (
+                  <span key={c} style={{ background: c }} />
+                ))}
+              </span>
+              <span className="palette-name">{p.name}</span>
+              <span className="muted small">{p.blurb}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
       <label className="setting">
         <span>
           <b>Sound</b>
@@ -382,6 +408,20 @@ interface PacksProps {
 }
 
 /** Two levels in one modal: the pack list, then a pack's chapters. */
+/** A little emoji badge per pack; anything not listed gets a plain tile. */
+const PACK_ICONS: Record<string, string> = {
+  words: '🔤',
+  movies: '🎬',
+  sports: '🏈',
+  geography: '🧭',
+  music: '🎵',
+  history: '🏛️',
+  science: '🔬',
+  screen: '🎮',
+  food: '🍜',
+  australia: '🦘',
+};
+
 export function PacksPanel({ packs, results, onPlay }: PacksProps) {
   const [openPack, setOpenPack] = useState<string | null>(null);
   const finished = useMemo(() => new Set(Object.keys(results)), [results]);
@@ -401,10 +441,15 @@ export function PacksPanel({ packs, results, onPlay }: PacksProps) {
             return (
               <li key={p.id}>
                 <button className={`pack-card theme-${p.theme}`} onClick={() => setOpenPack(p.id)}>
-                  <span className="pack-title">{p.title}</span>
-                  <span className="muted small">{p.blurb}</span>
-                  <span className="pack-progress">
-                    {done}/{playable} chapters done{p.theme === 'pitch' ? ' · played in yards' : ''}
+                  <span className="pack-icon" aria-hidden="true">
+                    {PACK_ICONS[p.id] ?? '▦'}
+                  </span>
+                  <span className="pack-text">
+                    <span className="pack-title">{p.title}</span>
+                    <span className="pack-blurb">{p.blurb}</span>
+                  </span>
+                  <span className="pack-progress" aria-label={`${done} of ${playable} chapters done`}>
+                    {done}/{playable}
                   </span>
                 </button>
               </li>
@@ -420,7 +465,10 @@ export function PacksPanel({ packs, results, onPlay }: PacksProps) {
       <button className="link-btn pack-back" onClick={() => setOpenPack(null)}>
         ← All packs
       </button>
-      <h3 className="pack-heading">{pack.title}</h3>
+      <h3 className="pack-heading">
+        <span aria-hidden="true">{PACK_ICONS[pack.id] ?? '▦'} </span>
+        {pack.title}
+      </h3>
       <p className="muted small">{pack.blurb}</p>
       <ol className="chapter-list">
         {pack.chapters.map((ch, i) => {

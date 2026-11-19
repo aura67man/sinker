@@ -14,7 +14,7 @@
   margin-left: 56px; /* clear the menu button */
   margin-right: 52px; /* and the sound button */
   font: 400 0.7rem var(--pixel);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -105,7 +105,7 @@
 
 .stat-label {
   font: 400 0.6rem var(--pixel);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -261,7 +261,7 @@
 }
 
 .descent-landmark.passed {
-  border-top-color: rgba(245, 165, 36, 0.4);
+  border-top-color: color-mix(in srgb, var(--amber) 40%, transparent);
 }
 
 .descent-landmark.passed span {
@@ -317,7 +317,7 @@
   background: repeating-linear-gradient(90deg, #0d0b10 0 8px, #15121a 8px 16px);
   border-top: 2px solid #2a2230;
   font: 400 0.6rem var(--pixel);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.08em;
   color: var(--muted);
 }
 
