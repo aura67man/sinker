@@ -1,0 +1,15 @@
+{
+  "id": "history",
+  "title": "History & Myth",
+  "short": "History",
+  "blurb": "Prime ministers, presidents, monarchs, emperors and old gods.",
+  "theme": "ocean",
+  "chapters": [
+    {
+      "title": "Crowns & Thrones",
+      "promptIds": ["australian-prime-ministers", "us-presidents", "british-monarchs", "roman-emperors", "norse-gods", "egyptian-gods", "greek-myth-heroes"]
+    },
+    { "title": "Empires", "promptIds": [] },
+    { "title": "Legends", "promptIds": [] }
+  ]
+}
